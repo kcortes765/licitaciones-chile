@@ -1,0 +1,19 @@
+Asunto: Solicitud de Ticket de Acceso - API Mercado Público
+
+Estimados,
+
+Mi nombre es Sebastián Cortés, estudiante de Ingeniería Civil de [UNIVERSIDAD]. Estoy desarrollando una herramienta de análisis de licitaciones de obras públicas que utiliza inteligencia artificial para facilitar la revisión de bases técnicas y el cumplimiento normativo (NCh, OGUC) a empresas constructoras y consultoras.
+
+Solicito un ticket de acceso a la API de Mercado Público para consumir los endpoints de licitaciones y órdenes de compra en formato JSON, con fines de desarrollo de esta aplicación.
+
+El uso previsto es:
+- Consulta de licitaciones publicadas filtrando por rubro construcción/obras públicas
+- Análisis automatizado de bases técnicas mediante IA
+
+Quedo atento a los requisitos o documentación necesaria para obtener el ticket.
+
+Saludos cordiales,
+
+Sebastián Cortés
+[TELÉFONO]
+sebastian.cortes.ing@gmail.com
