@@ -44,8 +44,8 @@
         1,
         2
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -56,8 +56,8 @@
       "depends_on": [
         3
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -68,8 +68,8 @@
       "depends_on": [
         4
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -78,8 +78,8 @@
       "description": "Reescribir TODOS los documentos comerciales en commercial/ a nivel premium. Cada documento debe sonar como consultoría de ingeniería de alto nivel, no como freelancer. (1) OFERTA_SERVICIO.md: Reescribir completo. Estructura: Problema (3 pain points específicos del sector construcción), Solución (qué hacemos, con datos — 'analizamos 1.8M licitaciones históricas'), Metodología (pipeline: dato → análisis → insight → acción), 3 tiers con detalle de entregables por tier, Equipo (Sebastián Cortés, Ing. Civil UCN — no más 'responsable comercial'), Casos de uso reales (mencionar tipos de insights descubiertos sin revelar clientes). (2) PROPUESTA_BASE.md: Reescribir como propuesta formal. Resumen ejecutivo con placeholders inteligentes [EMPRESA], alcance detallado por tier, entregables con formatos especificados, metodología en 4 pasos, SLA (tiempos de respuesta), exclusiones claras, pricing, condiciones de pago, aceptación. (3) TARIFARIO.md: Agregar tabla comparativa de tiers con checkmarks de qué incluye cada uno. (4) FOLLOWUP_SEQUENCE.md: 5 touchpoints (D0 WhatsApp, D2 email, D5 follow, D10 cierre, D30 reactivación) con copy EXACTO listo para copiar-pegar, cada uno personalizable con [EMPRESA], [HALLAZGO], [NOMBRE]. (5) ANALISIS_GRATIS_TEMPLATE.md: Reescribir con estructura de mini-diagnóstico que WOW al prospecto — no 'Dato 1: [HECHO]' sino estructura narrativa con hallazgo → implicancia → pregunta. (6) NDA_SIMPLE.md: Mantener pero profesionalizar formato.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; files=['OFERTA_SERVICIO.md','PROPUESTA_BASE.md','TARIFARIO.md','FOLLOWUP_SEQUENCE.md','ANALISIS_GRATIS_TEMPLATE.md','NDA_SIMPLE.md']; sizes=[Path(f'commercial/{f}').stat().st_size for f in files]; assert all(s > 500 for s in sizes), 'Archivos muy cortos'; print(f'6 templates OK, avg size {sum(sizes)//len(sizes)} bytes')\"",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {

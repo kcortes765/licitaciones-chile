@@ -1,83 +1,147 @@
-# Oferta de servicio
+# IngenIA Licitaciones — Inteligencia Competitiva para Constructoras
 
-## Marca
+---
 
-IngenIA Licitaciones
+## El problema real
 
-Responsable comercial:
-Sebastian Cortes
-Ing. Civil UCN
+Las constructoras chilenas que licitan en Mercado Publico enfrentan tres problemas estructurales que cuestan millones cada ano:
 
-## Titulo sugerido
+**1. Postular a ciegas.**
+La mayoria de las constructoras decide si participar o no basandose en intuicion, en el monto publicado o en lo que "parece buen proyecto". No existe un analisis sistematico de cuales oportunidades tienen mayor probabilidad de adjudicacion para SU empresa especifica — considerando su tamano, region, historial y tipo de obra.
 
-Inteligencia comercial para constructoras que licitan en Mercado Publico Chile
+**2. Perder contra los mismos rivales sin entender por que.**
+Constructoras pierden reiteradamente frente a los mismos competidores sin saber que estos las superan en patrones especificos: mejores precios en ciertos tramos, mas experiencia en un tipo de licitacion, o mejor posicionamiento en ciertas regiones. Sin esa inteligencia, cada propuesta es un tiro al aire.
 
-## Problema que resolvemos
+**3. Reaccionar tarde.**
+Las oportunidades en Mercado Publico se publican, cierran y adjudican rapidamente. Cuando una constructora se entera de una licitacion alineada con su perfil dos dias antes del cierre, el costo de preparar una propuesta competitiva ya es demasiado alto — o directamente no alcanza.
 
-Muchas constructoras participan en licitaciones con poca visibilidad sobre tres cosas:
+---
 
-- que oportunidades vale la pena perseguir
-- donde estan perdiendo contra rivales recurrentes
-- que errores o riesgos aparecen tarde, cuando el costo de reaccion ya es alto
+## Que hacemos
 
-## Que entregamos
+IngenIA Licitaciones analiza el historial completo de licitaciones publicas de construccion en Chile — mas de 1.800.000 registros historicos — para extraer inteligencia competitiva accionable para cada empresa.
 
-- Monitoreo semanal de licitaciones alineadas con el perfil de la empresa
-- Diagnostico competitivo por empresa o por licitacion
-- Deteccion de rivales frecuentes, tasas de perdida y patrones de derrota
-- Alertas tempranas de requisitos, riesgos y senales de oportunidad
-- Recomendaciones accionables para decidir si ofertar, como enfocar la propuesta y donde poner atencion
+No vendemos datos. Vendemos decisiones mejor informadas.
 
-## Formato de trabajo
+**Nuestro motor de analisis procesa:**
+- Historial completo de participaciones y adjudicaciones por RUT
+- Rivales recurrentes: quienes le ganan, cuantas veces, en que tipos de obra
+- Tasa de exito (win rate) comparada con el promedio del rubro y el top 10%
+- Distribucion por tipo de licitacion (Licitacion Publica, Licitacion Privada, Trato Directo)
+- Actividad temporal: periodos de mayor y menor exito
+- Costo de oportunidad: cuanto dinero deja en la mesa al WR actual vs el potencial
+- Oportunidades abiertas alineadas con su perfil, region y escala
 
-- Kickoff inicial de 30 minutos
-- Recoleccion de contexto comercial y tecnico
-- Entrega por WhatsApp, email y PDF ejecutivo
-- Seguimiento segun prioridades del cliente
+**Lo que entregamos:**
+- Diagnosticos ejecutivos de 6 paginas con graficos premium, analisis comparativo y recomendaciones especificas
+- Alertas semanales de oportunidades filtradas por perfil
+- Inteligencia de rivales: quien compite contra usted, donde le gana, y que patron siguen
+- Recomendaciones accionables: no "seleccione mejor", sino "en licitaciones LP de su region, su rival principal le supera en X — considere Y"
 
-## Modalidades
+---
 
-### 1. Diagnostico puntual por licitacion
+## Metodologia
 
-Ideal para validar una oportunidad especifica antes de ofertar.
+Nuestro proceso sigue cuatro etapas:
 
-- 1 licitacion
-- 1 informe ejecutivo
-- 1 llamada de revision
+### 1. Dato
+Capturamos y procesamos la informacion publica de Mercado Publico y fuentes complementarias: licitaciones, adjudicaciones, participantes, montos, regiones, tipos de compra. Cruzamos multiples fuentes para construir un perfil competitivo completo por empresa.
 
-Precio:
-- CLP 190.000 + IVA
+### 2. Analisis
+Evaluamos cada empresa en multiples dimensiones: actividad licitatoria, tasa de exito, escala de operacion, presencia regional, especializacion por tipo, rivales frecuentes y patrones de perdida. Comparamos contra el mercado completo — no contra un benchmark generico.
 
-### 2. Servicio mensual
+### 3. Insight
+Traducimos los numeros en hallazgos concretos. No "su win rate es 18%" sino "esta 4 puntos por debajo del promedio del rubro, lo que equivale a dejar aproximadamente $180M anuales en contratos que podrian ser suyos". Cada hallazgo viene con contexto y magnitud.
 
-Ideal para constructoras que participan de forma recurrente.
+### 4. Accion
+Cada entregable cierra con recomendaciones especificas basadas en los datos del cliente. No generalidades — acciones concretas que se pueden implementar en el proximo ciclo de licitacion.
 
-- Monitoreo continuo
-- Alertas priorizadas
-- Diagnosticos recurrentes
-- Bolsa mensual de revision y seguimiento
+---
 
-Precio:
-- CLP 490.000 + IVA
+## Modalidades de servicio
 
-### 3. Diagnostico competitivo por empresa
+### Diagnostico Competitivo por Empresa — CLP 250.000 + IVA
 
-Ideal para empresas que quieren entender derrotas recurrentes, rivales frecuentes o patrones de perdida.
+Ideal para: constructoras que quieren una radiografia completa de su posicion competitiva.
 
-- revision de historial visible
-- hallazgos ejecutivos
-- recomendaciones accionables
+**Entregables:**
+- PDF ejecutivo de 6 paginas con graficos de posicionamiento, analisis de rivales, costo de oportunidad y recomendaciones
+- Analisis de win rate vs mercado con percentil exacto
+- Identificacion de rivales principales y patrones de derrota
+- Tabla detallada de licitaciones perdidas contra rival dominante
+- Escenarios de mejora cuantificados en pesos
+- 4-5 recomendaciones especificas para su caso
+- Reunion de revision de 30 minutos
 
-Precio:
-- CLP 250.000 + IVA
+**Plazo:** 48-72 horas habiles desde confirmacion.
+
+### Diagnostico Puntual por Licitacion — CLP 190.000 + IVA
+
+Ideal para: validar una oportunidad especifica antes de invertir recursos en la propuesta.
+
+**Entregables:**
+- Analisis de la licitacion: tipo, monto, region, historial de compras del organismo
+- Competidores probables basados en participaciones previas similares
+- Evaluacion de probabilidad relativa para su empresa
+- Riesgos visibles y senales de alerta
+- Recomendacion fundamentada: avanzar, revisar o descartar
+- Informe ejecutivo en PDF
+
+**Plazo:** 24-48 horas habiles.
+
+### Servicio Mensual de Inteligencia — CLP 490.000 + IVA
+
+Ideal para: constructoras que licitan de forma recurrente y necesitan ventaja sostenida.
+
+**Entregables semanales:**
+- Alerta de oportunidades filtradas por perfil (region, tipo, monto, probabilidad)
+- Movimiento de rivales: si alguno de sus competidores frecuentes participo o gano
+- Recomendacion semanal: cuales perseguir y por que
+- Resumen ejecutivo en PDF + version WhatsApp
+
+**Entregables mensuales:**
+- Diagnostico competitivo actualizado
+- Evolucion de metricas clave (win rate, actividad, posicion en mercado)
+- Revision mensual de 30 minutos
+
+**Plazo:** Calendario semanal acordado. Primera entrega en 5 dias habiles.
+
+---
+
+## Equipo
+
+**Sebastian Cortes**
+Ingeniero Civil, Universidad Catolica del Norte.
+
+Disenador y operador del motor de analisis de IngenIA Licitaciones. Experiencia en analisis de datos de contratacion publica, modelamiento competitivo y desarrollo de herramientas de inteligencia para el sector construccion.
+
+Contacto directo con cada cliente. Sin intermediarios, sin capas de gestion. Usted habla con quien hace el analisis.
+
+---
+
+## Casos de uso
+
+Sin revelar identidades, estos son tipos de hallazgos que hemos identificado para constructoras reales:
+
+- **Rival dominante invisible:** Una constructora mediana perdia sistematicamente frente al mismo competidor en licitaciones publicas de su region. El rival le habia ganado 5 de las ultimas 8. Identificamos que el rival se adjudicaba consistentemente en un rango de monto especifico donde la constructora no ajustaba su oferta economica.
+
+- **Win rate bajo el potencial:** Una empresa con amplia experiencia en obras publicas tenia un win rate de 14% — 8 puntos bajo el promedio del rubro. Al analizar la distribucion, descubrimos que postulaba a demasiadas licitaciones fuera de su escala optima. Concentrarse en su rango habria mejorado su tasa a niveles competitivos.
+
+- **Inactividad costosa:** Una constructora dejo de licitar por 8 meses. Durante ese periodo, en su region se publicaron mas de 40 licitaciones alineadas con su perfil. Sus rivales directos siguieron participando y ganando, consolidando presencia que sera dificil de recuperar.
+
+- **Concentracion de perdidas:** Una empresa con buen historial perdia el 60% de sus licitaciones contra solo 2 rivales. Al mapear los patrones, identificamos que ambos rivales operaban con equipos especializados en el tipo de obra donde la constructora era mas debil.
+
+---
 
 ## Lo que NO incluye
 
-- Redaccion completa de oferta tecnica
-- Asesoria legal
-- Asesoria tributaria o financiera
+- Redaccion de ofertas tecnicas o economicas
+- Asesoria legal, tributaria o financiera
+- Acceso a informacion no publica o privilegiada
 - Garantia de adjudicacion
 
-## Mensaje corto para enviar
+Nuestro trabajo es informar mejor sus decisiones, no tomar decisiones por usted.
 
-Ayudamos a constructoras que licitan en Mercado Publico a detectar oportunidades con mejor encaje, entender por que pierden frente a ciertos rivales y revisar riesgos antes de ofertar. Entregamos diagnosticos ejecutivos y alertas accionables, no solo resumenes de bases.
+---
+
+*IngenIA Licitaciones — Inteligencia competitiva para constructoras que licitan en Mercado Publico Chile.*
