@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 7/20
+## Features completadas: 8/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -209,3 +209,33 @@
 - Se usó `tmp_path` fixture de pytest para tests de filesystem (find_best_leads_path, load_best_leads_dataframe)
 - Tests cubren inmutabilidad (no modifica DF original) en recompute_score_total, recompute_score_combined, assign_cluster_profile, assign_rank
 - Cobertura 80 tests supera los ~45 del plan gracias a parametrización y edge cases adicionales
+
+### Sesión 8 — 2026-03-28 — Feature 8: test_validation
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_validation.py`: 129 tests exhaustivos para pipeline_validation.py
+
+**Tests por clase** (129 total):
+1. `TestPipelineContracts` (27 tests) — 6 artifacts existen, cada uno tiene required/ranges, columnas específicas por contrato, unique keys, ranges son tuples
+2. `TestValidateDataframeContract` (22 tests) — DataFrame válido→vacío para los 6 contratos, columnas faltantes, duplicados, valores fuera de rango, RUT nulos/NaN, contrato desconocido→KeyError, rank sin upper bound, NaN ignorados, múltiples issues
+3. `TestAssertDataframeContract` (2 tests) — wrapper que lanza ValueError
+4. `TestClientForbiddenPatterns` (20 tests) — score_total/combined/actividad/region matchean, cluster/cluster_perfil matchean, xgb_*/km_* matchean, lead ideal/rank_position matchean, score_digital NO matchea (excepción regex), nombre/empresa/rut NO matchean, case insensitive, embedded en oraciones
+5. `TestAssertClientSafeColumns` (10 tests) — columnas limpias OK, score_total/combined/cluster/xgb/km→ValueError, score_digital no bloquea, allowed_columns override, múltiples prohibidas, DF vacío OK
+6. `TestAssertClientSafeText` (8 tests) — texto limpio OK (fixture), dirty text raises, score_total/xgb_predicted_wr/cluster/km_score en texto→ValueError, vacío OK, texto normal OK
+7. `TestAssertClientSafeJson` (7 tests) — payload limpio/vacío/lista OK, score_total/nested/value/cluster→ValueError
+8. `TestAssertClientSafeBinary` (6 tests) — PDF limpio OK, score_total/cluster/xgb en binario→ValueError, vacío OK, binario puro OK
+9. `TestWriteRunManifest` (10 tests) — JSON válido, campos requeridos, command/source/outputs almacenados, details default/custom, ISO timestamp, crea directorios padre, sobreescribe existente
+10. `TestWriteValidationReport` (5 tests) — JSON válido, preserva estructura, crea directorios, unicode, vacío
+11. `TestExtractTextLikeChunks` (5 tests) — extrae texto legible, vacío, binario puro, chunk mínimo 4 chars
+12. `TestScanTextForbidden` (5 tests) — retorna lista, vacío, múltiples matches, palabra parcial no matchea, case insensitive
+
+**Verificación**:
+- `python -m pytest tests/test_validation.py -v --tb=short` → **129 passed in 0.42s** (PASS)
+
+**Decisiones**:
+- Se crearon helpers `_valid_*_df()` para generar DataFrames válidos por cada contrato, reutilizados en múltiples tests
+- Se usó `tmp_path` fixture de pytest para tests de filesystem (write_run_manifest, write_validation_report, assert_client_safe_binary)
+- Se testearon funciones internas `_scan_text_forbidden` y `_extract_text_like_chunks` para cobertura completa
+- Cobertura 129 tests supera ampliamente los ~60 del plan gracias a parametrización y edge cases adicionales
