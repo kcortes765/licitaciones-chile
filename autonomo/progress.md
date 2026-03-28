@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 16/20
+## Features completadas: 17/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 5 (corregidos)
 
@@ -435,3 +435,31 @@
 **Verificación**:
 - `python -m pytest tests/ -v --tb=short` → **863 passed in 3.15s** (PASS)
 - Criterio del plan: `tail -3 | grep 'passed'` → **PASS**
+
+### Sesión 17 — 2026-03-28 — Feature 17: rerun_verify_clean
+
+**Estado**: COMPLETADA
+
+**Verificaciones ejecutadas**:
+
+1. **Suite de tests completa**: `python -m pytest tests/ -v` → **863 passed, 0 failures** en 3.24s (PASS)
+2. **validate_outputs.py**: Completó sin error, generó validation_report.json (PASS)
+3. **grep 'Seba' *.py**: Solo "Sebastián Cortés" en firmas/templates de mensajes — referencias legítimas al fundador, no paths hardcoded (PASS)
+4. **Reporte generado**: `autonomo/phase_a_report.md` con resumen completo de Phase A
+
+**Tests por módulo** (verificación final):
+- `test_scoring.py`: 202 passed
+- `test_validation.py`: 129 passed
+- `test_messages.py`: 125 passed
+- `test_utils.py`: 87 passed
+- `test_pipeline_core.py`: 80 passed
+- `test_config.py`: 79 passed
+- `test_export_safety.py`: 65 passed
+- `test_data_contracts.py`: 57 passed
+- `test_integration.py`: 39 passed
+
+**Archivos creados**:
+- `autonomo/phase_a_report.md`: Reporte final de Phase A con totales, bugs corregidos, estado de seguridad
+
+**Decisiones**:
+- Las menciones de "Sebastián" en *.py son legítimas (nombre del fundador en firmas/templates de mensajes WhatsApp), no paths hardcoded — consistente con decisión de Feature 1
