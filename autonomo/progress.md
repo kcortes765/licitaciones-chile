@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 2/20
+## Features completadas: 3/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -54,3 +54,41 @@
 **Decisiones**:
 - Se usaron rangos compatibles (>=installed_major.minor, <next_major) para equilibrar estabilidad y flexibilidad.
 - Todas las dependencias opcionales (xgboost, scipy, networkx, apify-client) incluidas ya que están importadas en el código aunque con try/except — requirements.txt debe garantizar instalación completa.
+
+### Sesión 3 — 2026-03-28 — Feature 3: test_infrastructure
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/__init__.py`: Módulo de tests
+- `lead_scoring/tests/conftest.py`: 11 fixtures reutilizables
+- `lead_scoring/pyproject.toml`: Configuración pytest (testpaths, markers, addopts)
+
+**Fixtures en conftest.py**:
+1. `sample_company_row` — pd.Series con los 22 campos de company_database (datos sintéticos realistas)
+2. `sample_leads_df` — DataFrame 5 filas con leads rankeados + 9 score_{dim} + score_total + rank
+3. `sample_enriched_df` — Extiende sample_leads_df con contacto, teléfono, email, web, scores ML, cluster_perfil, score_digital
+4. `sample_loss_df` — DataFrame 3 filas para loss_analysis con rival1/rival1_cnt
+5. `clean_text` — Mensaje WhatsApp seguro sin términos internos
+6. `dirty_text` — Texto con score_total, xgb_score, km_score, cluster, pipeline (para tests de seguridad)
+7. `real_company_db` — Carga parquet real, skip si no existe
+8. `real_leads_ranked` — Carga parquet real, skip si no existe
+9. `real_leads_ml_ranked` — Carga parquet real, skip si no existe
+10. `real_leads_enriched` — Carga parquet real, skip si no existe
+11. `real_loss_analysis` — Carga parquet real, skip si no existe
+
+**Constantes exportadas**:
+- `FILTERED_DIR`, `OUTPUT_DIR` — paths a directorios de datos
+- `COMPANY_DB_PATH`, `LEADS_RANKED_PATH`, etc. — paths a parquets individuales
+- `skip_no_company_db`, `skip_no_leads_ranked`, etc. — marcadores pytest.mark.skipif
+
+**Verificación**:
+- 7 smoke tests pasaron validando todas las fixtures y paths
+- `python -m pytest tests/conftest.py --co -q` ejecuta sin errores
+- pyproject.toml con testpaths=["tests"], addopts="-v --tb=short"
+
+**Decisiones**:
+- Se usó pyproject.toml en vez de pytest.ini (formato moderno, más extensible)
+- sys.path se inserta en conftest.py para que `import config`, `import utils` etc. funcionen desde tests/
+- Fixtures reales usan pytest.skip() dentro del fixture (más flexible que skipif en decorador para fixtures)
+- Datos sintéticos modelados con columnas reales verificadas contra los parquets existentes

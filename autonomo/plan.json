@@ -39,8 +39,8 @@
       "description": "Crear la infraestructura de tests: lead_scoring/tests/__init__.py, lead_scoring/tests/conftest.py con fixtures reutilizables. El conftest debe proveer: (1) sample_company_row — pd.Series con todos los campos de company_database, (2) sample_leads_df — DataFrame pequeño con leads rankeados, (3) sample_enriched_df — con campos de contacto, (4) paths a los parquets reales para tests de integración (saltar si no existen con pytest.mark.skipif), (5) clean_text y dirty_text fixtures para tests de seguridad. También crear un pytest.ini o pyproject.toml en lead_scoring/ con configuración básica de pytest (testpaths = tests).",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/conftest.py --co -q 2>&1 | head -5",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
