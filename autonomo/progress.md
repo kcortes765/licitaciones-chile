@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 18/20
+## Features completadas: 19/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 5 (corregidos)
 
@@ -508,3 +508,30 @@
 - Se removió xgb_predicted_wr de loss_cols (v4 lo incluía pero nunca lo usaba en templates)
 - Costo de oportunidad calculado como `monto_total * (INDUSTRY_WR_MEDIAN - wr)`, solo se muestra si >= $50M para evitar cifras no significativas
 - Se mantuvo la misma lógica de prioridad de insights de v4 (probada y verificada en Phase A)
+
+### Sesión 19 — 2026-03-28 — Feature 19: verify_v5_messages
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `verificar_mensajes_v5.py`: Verificador completo de mensajes v5 contra datos reales
+- `verificacion_v5_report.json`: Reporte JSON de verificación (generado por el script)
+
+**Verificaciones implementadas** (5 tipos):
+1. **Datos vs parquet** — Para cada tipo de insight, parsea los datos mencionados en el mensaje (rival, %, conteo, meses, pérdidas, bids, wins) y los compara contra loss_analysis.parquet. Cubre los 10 tipos: rival_fuerte, rival_recurrente, win_rate_gap_LP, lp_alto, inactivo, wr_bajo_lp, loss_concentrado, wr_bajo, rival_unico, default.
+2. **Header metadata** — Verifica WR%, LP, Perdidas y Dias del header de cada lead contra el parquet.
+3. **Términos prohibidos** — Escanea cada mensaje por: score, ranking, pipeline, algoritmo, modelo, machine learning, xgb, km_, lead ideal, cluster.
+4. **Longitud de mensaje** — Verifica que el cuerpo antes de la firma no exceda 500 caracteres.
+5. **CTA con interrogación** — Verifica que cada mensaje contiene al menos un signo de interrogación.
+
+**Resultado de verificación**:
+- 45 leads parseados, 45 OK, 0 errores de datos
+- 0 términos prohibidos, 0 longitud excedida, 0 CTA faltante
+- Distribución: inactivo(10), lp_alto(9), rival_recurrente(7), win_rate_gap_LP(7), rival_unico(5), default(3), rival_fuerte(2), wr_bajo(1), wr_bajo_lp(1)
+- No se requirieron correcciones en generar_mensajes_v5.py
+
+**Decisiones**:
+- Se usó matching flexible de nombres de rival (aliases con pipe, title case, substring matching) para tolerar variaciones de humanización
+- Tolerancia de 1pp para comparación de porcentajes (redondeo) y 20% para costos de oportunidad
+- Se verifican headers (metadata) Y contenido del mensaje por separado para cobertura completa
+- Reporte JSON incluye distribución de insights, errores categorizados y lista de leads OK
