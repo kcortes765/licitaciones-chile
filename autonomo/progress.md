@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 4/20
+## Features completadas: 5/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -120,3 +120,26 @@
 - Se incluyeron tests de pipeline_core (COMBINED_SCORE_WEIGHTS, CLIENT_FORBIDDEN_COLUMNS) por ser constantes de configuración relacionadas
 - Se usó `unittest.mock.patch.dict` para tests de env vars sin contaminar el entorno real
 - Tests parametrizados con `@pytest.mark.parametrize` para las 9 dimensiones de scoring
+
+### Sesión 5 — 2026-03-28 — Feature 5: test_utils
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_utils.py`: 87 tests exhaustivos para utils.py
+
+**Tests por clase** (87 total):
+1. `TestNormalizarRut` (20 tests) — con/sin puntos, con/sin guión, K mayúscula/minúscula, espacios, vacío, None, tipo incorrecto, límites de longitud (5-10 dígitos), RUTs reales
+2. `TestExtraerRutDeId` (10 tests) — formato OCDS CL-RUT, directo, sin guión, texto random, vacío, None, k minúscula, números cortos, RUT embebido
+3. `TestTipoLicitacion` (11 tests) — LP/LE/L1/LR/LQ, Otro, minúsculas, mixed case, paréntesis, None, numérico
+4. `TestIsPersonaNatural` (18 tests) — empresas (CONSTRUCTORA, SERVICIOS, SPA, EIRL, S.A., INVERSIONES), personas (1-4 palabras), pipe con empresa/persona, 5 palabras=False, vacío, NaN, None, acentos empresa/persona, pipe con muchas palabras
+5. `TestFormatoClp` (13 tests) — billones, millones, miles, cero, NaN, None, np.nan, negativo, montos típicos
+6. `TestSafeGet` (12 tests) — valor numérico/string, NaN con/sin default, np.nan, None, columna inexistente, cero, False (numpy.bool_), string vacío, lista
+7. `TestPrintHeader` (3 tests) — output contiene texto, separadores, vacío no crashea
+
+**Verificación**:
+- `python -m pytest tests/test_utils.py -v --tb=short` → **87 passed in 0.15s** (PASS)
+
+**Decisiones**:
+- Test `test_false_no_es_none` usa `==` en vez de `is` porque pandas Series retorna `numpy.bool_` que no es el singleton Python `False` — bug lógico corregido en test
+- Cobertura supera los ~50 tests del plan (87 total) para cubrir todos los edge cases relevantes
