@@ -1,9 +1,9 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 9/20
+## Features completadas: 12/20
 ## Última sesión: 2026-03-28
-## Errores encontrados: 0
+## Errores encontrados: 3 (corregidos)
 
 ---
 
@@ -264,3 +264,81 @@
 - loss_analysis usa `total_lost_loss` como columna de pérdidas (diferente de `total_lost` del dataset base)
 - Tests de recomputación usan tolerancia 0.5 para score_total y score_combined, con umbral de >=99% de filas consistentes
 - Tests de consistencia cross-dataset verifican que los datasets se encadenan correctamente (company_db → ranked → ml_ranked → enriched)
+
+### Sesión 10 — 2026-03-28 — Feature 11: test_messages
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_messages.py`: 125 tests exhaustivos para generar_mensajes_v4.py y verificar_mensajes_v2.py
+
+**Archivos modificados** (bug fix):
+- `generar_mensajes_v4.py`: Corregido regex en humanizar() y limpiar_rival() — `\b` trailing impedía match de E.I.R.L. y S.A.
+- `generar_mensajes_v3.py`: Misma corrección de regex
+
+**Tests por clase** (125 total):
+1. `TestHumanizar` (15 tests) — title case, removes SPA/LTDA/LIMITADA/EIRL/E.I.R.L./S.A., pipe→comercial, None/NaN/empty/numeric→str, whitespace
+2. `TestLimpiarRival` (9 tests) — cleaning, pipe, empty/None/whitespace/NaN→"", removes suffixes, title case
+3. `TestPct` (8 tests) — 0.22→"22%", 0→"0%", 1.0→"100%", rounding up/down, format
+4. `TestMeses` (9 tests) — 180→6, 365→12, 30→1, 0→0, rounding, float/string input, returns int
+5. `TestElegirInsightRivalFuerte` (5 tests) — cnt≥3, body contains rival name and count, has CTA
+6. `TestElegirInsightRivalRecurrente` (3 tests) — cnt≥2, not fuerte, body mentions rival
+7. `TestElegirInsightWinRateGapLP` (5 tests) — n_LP≥5 AND wr<0.20, boundary, gap points, LP count
+8. `TestElegirInsightLpAlto` (4 tests) — n_LP≥5 with wr≥0.20, above/at/below industry, body
+9. `TestElegirInsightInactivo` (5 tests) — dias≥180, boundary, body has months, priority over wr_bajo_lp
+10. `TestElegirInsightWrBajoLp` (3 tests) — wr<0.20 AND n_LP≥3, high LP, not if LP<3
+11. `TestElegirInsightLossConcentrado` (3 tests) — loss_rate≥0.40 AND total_lost≥5, boundary
+12. `TestElegirInsightWrBajo` (3 tests) — wr<0.19, boundary, body has stats
+13. `TestElegirInsightRivalUnico` (3 tests) — rival AND total_lost≥3, body mentions rival, not if few losses
+14. `TestElegirInsightDefault` (3 tests) — fallback case, has stats and CTA
+15. `TestInsightPriority` (5 tests) — rival_fuerte>all, recurrente>LP, gap>lp_alto, inactivo>wr_bajo_lp, zero→default
+16. `TestInsightEdgeCases` (5 tests) — NaN win_rate, None rival, zero everything, missing fields, all insights have required keys
+17. `TestForbiddenTerms` (3 tests) — no score/cluster/ML/modelo/pipeline/algoritmo/ranking in any message/cuerpo/CTA
+18. `TestGenerarMensaje` (8 tests) — with/without contact, empty/short name, firma, CTA question, multiword name
+19. `TestGenerarWspLink` (7 tests) — +56 prefix, without prefix, float phone, URL encoding, leading zero
+20. `TestGetRivalAliases` (5 tests) — basic, pipe, empty, None, "nan"
+21. `TestNameMatches` (6 tests) — exact, partial both ways, no match, case insensitive, empty aliases
+22. `TestConstants` (4 tests) — INDUSTRY_WR_MEDIAN=0.22, type float, FIRMA has name and company
+23. `TestIntegrationRealData` (4 tests) — 10 leads insight consistent, no forbidden terms, CTA question, ≥3 insight types
+
+**Bug encontrado y corregido**:
+- **Regex `\b` trailing en humanizar/limpiar_rival**: La regex `\b(SPA|LTDA|...|E\.I\.R\.L\.|S\.A\.|SA)\b\.?$` no matcheaba `E.I.R.L.` ni `S.A.` porque `\b` requiere transición word↔non-word, pero `.` es non-word y al final de string `\b` falla. Fix: remover `\b` trailing → `\b(...)\.?$`. Corregido en v3 y v4.
+
+**Verificación**:
+- `python -m pytest tests/test_messages.py -v --tb=short` → **125 passed in 0.18s** (PASS)
+
+**Decisiones**:
+- Funciones de verificar_mensajes_v2.py (get_rival_aliases, name_matches) copiadas localmente al test para evitar ejecución del módulo completo que hace I/O a nivel de módulo
+- Paths definidos localmente en el test (no importados de conftest.py por la mecánica de pytest)
+- Test `test_zero_everything` ajustado: wr=0 < 0.19 → wr_bajo es correcto (no default)
+- Cobertura 125 tests supera ampliamente los ~80 del plan gracias a edge cases y tests de prioridad
+
+### Sesión 11 — 2026-03-28 — Feature 12: test_integration
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_integration.py`: 39 tests de integración end-to-end con datos reales
+
+**Tests por clase** (39 total):
+1. `TestCalculateScoresOnRealData` (4 tests) — score_total [0,100], 9 dims creadas y en rango, suma ponderada correcta, row count preservado
+2. `TestRecomputeScoreTotalConsistency` (3 tests) — recompute ≈ original (tolerancia 0.5, ≥99%), recomputado en [0,100], dims en [0,100]
+3. `TestRecomputeScoreCombinedConsistency` (2 tests) — recompute combined ≈ original, en [0,100]
+4. `TestDatasetSizeRelationships` (4 tests) — ranked > enriched, ranked == ml_ranked, ranked ⊂ company_db, enriched ⊂ ml_ranked
+5. `TestCrmExportSafety` (4 tests) — CRM sin columnas prohibidas, columnas esperadas, pasa client-safe, ml_ranked→CRM limpio
+6. `TestFullScoreFlow` (2 tests) — cadena completa scores→combined→cluster→rank, sin ML combined≈score_total
+7. `TestScoreTotalFromDims` (1 test) — suma ponderada almacenada == recalculada (≥99% filas)
+8. `TestAssignRankOnRealData` (5 tests) — rank empieza en 1, secuencial sin huecos, mayor score→menor rank, rank_ml idem
+9. `TestPipelineContracts` (5 tests) — company_db/leads_ranked/ml_ranked/enriched/loss_analysis pasan contratos
+10. `TestCoverageReport` (5 tests) — keys esperadas, total=len(df), conteos ≥0, conteos ≤ total, no crashea con ranked
+11. `TestResolveColumnsOnRealData` (4 tests) — resolve score/rank en ml_ranked y ranked
+
+**Verificación**:
+- `python -m pytest tests/test_integration.py -v --tb=short` → **39 passed in 0.96s** (PASS)
+
+**Decisiones**:
+- Todos los tests usan `@pytest.mark.skipif` para saltar si los parquets no existen
+- Se usan datos reales completos (no solo head) para tests de consistencia y contratos
+- Para tests de calculate_scores se usa head(50-100) para mantener velocidad razonable
+- Tolerancia de 0.5 puntos y ≥99% de filas para recompute tests (consistente con test_data_contracts)
+- 39 tests superan los ~30 del plan gracias a cobertura adicional en ranking y resolve columns
