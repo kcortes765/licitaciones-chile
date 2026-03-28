@@ -1,0 +1,141 @@
+{
+  "project": "IngenIA Licitaciones — Visual Redesign Museo",
+  "objective": "REESCRIBIR DESDE CERO todo el sistema visual del PDF. No parchar — demoler y reconstruir. El resultado debe parecer que un equipo de diseñadores trabajó semanas. Aplicar autonomo/CANVAS_DESIGN_SYSTEM.md como biblia. Cada página es una pieza de comunicación visual, no un reporte con gráficos pegados.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "design_philosophy",
+      "description": "Crear autonomo/DESIGN_PHILOSOPHY_INGENIA.md — la filosofía de diseño específica para IngenIA Licitaciones siguiendo el sistema canvas-design de autonomo/CANVAS_DESIGN_SYSTEM.md. LEER ESE ARCHIVO PRIMERO. Nombre del movimiento: 'Engineered Clarity' o similar (elegir el mejor). 4-6 párrafos de filosofía visual poética pero aplicable. Debe cubrir: (1) Espacio y forma: márgenes generosos (25mm+), espacio negativo como señal de confianza, cada elemento respira. Menos es más. (2) Color y material: navy profundo (#0F1B2D) como territorio, cobrizo/dorado (#B8860B) solo para hallazgos clave (1-2 por página max), grises elegantes (#6B7B8D, #E8ECF0) para secundario. NUNCA más de 4 colores por página. (3) Escala y ritmo: números grandes (32pt+) como anclas visuales, texto pequeño (8-9pt) como soporte. Contraste de escala dramático — no todo del mismo tamaño. (4) Composición: grid asimétrico (60/40 o 70/30), NUNCA centrar todo. Alinear a la izquierda. Charts ocupan espacio generoso (no apretados). 1 chart max por mitad de página. (5) Tipografía: Helvetica thin/light para cuerpo, bold solo para métricas. Texto mínimo — si se puede decir con un número, no usar párrafo. (6) Craftsmanship: cada píxel intencional, cada espacio medido, cada color justificado.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && test -f autonomo/DESIGN_PHILOSOPHY_INGENIA.md && python -c \"t=open('autonomo/DESIGN_PHILOSOPHY_INGENIA.md',encoding='utf-8').read(); assert len(t)>1500; print('Philosophy OK')\"",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "rewrite_design_system",
+      "description": "REESCRIBIR DESDE CERO lead_scoring/pdf_design.py. El actual tiene buenos componentes pero produce layouts apretados. El nuevo debe: (1) LEER autonomo/DESIGN_PHILOSOPHY_INGENIA.md primero. (2) Clase MuseumPDF(FPDF) con LAYOUT ENGINE que trackea current_y automáticamente — NUNCA hardcodear posiciones Y. Cada método retorna la nueva Y después de renderizar. Método needs_new_page(required_height) que agrega página si no cabe. (3) Márgenes: LEFT=25mm, RIGHT=20mm, TOP=25mm (post-header), BOTTOM=22mm (pre-footer). Ancho útil: 165mm. (4) Spacing constants: SECTION_GAP=12mm, ELEMENT_GAP=6mm, TEXT_GAP=3mm. (5) Paleta REDUCIDA: solo 6 colores (navy, dark_gray, medium_gray, light_bg, gold_accent, white). (6) Componentes: page_header(title, subtitle) — barra navy 14mm con texto, metric_row(metrics_list) — cards con espacio generoso (gap 4mm entre cards), section_heading(number, title, subtitle) — número en círculo + título, NO línea decorativa, body_text(text, max_lines) — texto con line_height 5.5mm, NUNCA más de 6 líneas por bloque, chart_block(img_path, caption, width_mm) — chart centrado con caption debajo y 6mm padding arriba/abajo, callout(text, style) — borde izquierdo 3mm + texto, SIN fondo de color (solo borde), data_table(headers, rows) — tabla limpia sin bordes horizontales entre filas (solo header separator y bottom), pricing_cards(tiers) — 3 cards lado a lado con 4mm gap, cta_block(text, contact) — card navy con texto centrado, footer() — línea fina + 3 textos (marca, confidencial, página). (7) Cada componente debe tener MÁXIMO 2 colores. (8) ZERO overlaps garantizado por el layout engine.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_design import MuseumPDF; pdf=MuseumPDF(); pdf.add_page(); print('Design system v3 OK')\"",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "rewrite_charts",
+      "description": "REESCRIBIR DESDE CERO lead_scoring/pdf_charts.py. Cada chart debe seguir la filosofía de diseño. PRINCIPIOS: fondo blanco puro, sin grid visible (o grid muy sutil alpha=0.05), sin bordes de axes, colores de la paleta reducida, tipografía thin, DPI 200, NADA se solapa. (1) gauge_chart(wr, avg_wr, figsize=(3.2,2.0)): Semicírculo limpio con 3 zonas de color MUY sutiles (alpha=0.15). Needle apuntando al WR. Número grande (24pt) DEBAJO del gauge, no encima. Label 'Tasa de adjudicación' arriba en gris small. Promedio marcado con línea punteada fina. (2) radar_chart(percentiles_dict, figsize=(3.5,3.0)): 8 ejes. Labels CORTOS (max 12 chars, abreviar). Font 7pt. Relleno navy alpha=0.12. Línea punteada gris para percentil 50. Valores numéricos FUERA del polígono, no encima. (3) rival_bars(rivals_list, figsize=(7.0,1.8)): Barras horizontales finas (height=0.25). Navy para rival 1, gray para resto. Conteo a la derecha. '1 vez' no '1 veces'. (4) scatter_position(company_bids, company_wr, all_bids, all_wr, figsize=(7.0,2.5)): Points en gris alpha=0.15. Company point en navy grande. Cuadrantes como texto MUY sutil (alpha=0.08). Lines for promedios punteadas finas. (5) donut_chart(data_dict, figsize=(2.8,2.8)): Centro con total. Colores: navy, medium_gray, light_gray. Max 3 slices visibles. (6) waterfall_chart(scenarios, figsize=(7.0,2.8)): Barras verticales. Actual=navy, increments=gold, total=navy. Labels ARRIBA. Líneas conectoras finas. TODOS: plt.rcParams con font.family='sans-serif', axes.spines all False, figure.facecolor='white'.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_charts import *; print('Charts v3 OK')\"",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "rewrite_pdf_page1",
+      "description": "REESCRIBIR Página 1 en generate_pdf_v2.py usando MuseumPDF. Usar el layout engine — NO hardcodear Y. ESTRUCTURA: (1) Header bar navy (14mm): nombre empresa bold 20pt left-aligned, fecha right-aligned 9pt, 'IngenIA Licitaciones' right-aligned 8pt debajo. RUT + Región en segunda línea 9pt. SIN badge 'Diagnostico Competitivo Premium' — es ruido visual. (2) SPACER 15mm — breathing room. (3) Metric row: 5 cards. Cada card: número grande 28pt bold, label 8pt debajo, subtexto 7pt gris. Gap 4mm entre cards. Altura ~25mm. (4) SPACER 10mm. (5) Section: 'Resumen Ejecutivo'. Título 14pt bold. Texto 9pt, max 5 líneas, line_height 5mm. Contenido personalizado con datos reales. (6) SPACER 8mm. (7) Divider line fina gold (0.3pt). (8) SPACER 6mm. (9) Tabla de contenido: 4 items numerados. Sin círculos decorativos — solo '1.' en bold + título + descripción en gris. Clean. (10) Footer. TOTAL: no más del 70% del espacio vertical usado. El 30% restante es breathing room intencional. Importar load_data() de 11_generate_diagnostic_pdf.py para datos.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        2,
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "rewrite_pdf_page2",
+      "description": "REESCRIBIR Página 2 (Desempeño vs Mercado). ESTRUCTURA: (1) Section heading: '1 Desempeño vs. Mercado' + subtítulo gris. (2) SPACER 8mm. (3) Layout 2 columnas (60/40): LEFT: gauge chart (width=95mm). RIGHT: texto 'Tasa de Adjudicación' con 3-4 líneas interpretativas. Font 9pt. Bullets con fortalezas (+) en bold. (4) SPACER 10mm. (5) Layout 2 columnas (55/45): LEFT: radar chart (width=85mm). RIGHT: 'Perfil Competitivo' con interpretación. Listar top 3 fortalezas y top 1 debilidad con percentiles. Font 9pt. (6) SPACER 10mm. (7) Scatter chart full-width (width=160mm, height ~60mm). Caption centrada 7pt gris. (8) Footer. CLAVE: los charts deben tener figsize que corresponde EXACTAMENTE al ancho en mm (1 inch = 25.4mm). Chart de 95mm = figsize width 3.74in. Nunca escalar un chart grande a espacio pequeño (pixela) ni uno pequeño a grande (borroso).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "rewrite_pdf_page3",
+      "description": "REESCRIBIR Página 3 (Inteligencia Competitiva). ESTRUCTURA: (1) Section heading. (2) SPACER 8mm. (3) Rival bars chart full-width (width=160mm, height=45mm max). (4) SPACER 6mm. (5) Para cada rival (max 2): una línea de texto: '{RIVAL}: ganó {N} de {TOTAL} no adjudicadas ({%} de las derrotas).' Font 9pt. NO boxes decorativas — solo texto limpio. (6) SPACER 8mm. (7) SI hay datos de licitaciones específicas vs rival principal: tabla limpia con Código, Fecha, Monto, Título (truncado a 40 chars). Max 5 filas. Font 8pt. Header en navy bold 8pt. Sin bordes verticales. (8) SPACER 8mm. (9) Callout: hallazgo clave. Borde izquierdo gold 3mm. Texto 9pt bold primera línea + 9pt normal resto. Max 3 líneas. (10) SPACER 8mm. (11) Tabla comparativa: 4 columnas (Métrica, Tu empresa, Promedio, Top 10%). Max 4 filas. Columna 'Tu empresa' en bold. (12) Footer. CLAVE: si la tabla de licitaciones no cabe con la tabla comparativa, ELIMINAR la tabla de licitaciones para esta empresa y solo mencionarla en texto.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 7,
+      "name": "rewrite_pdf_page4",
+      "description": "REESCRIBIR Página 4 (Análisis Temporal y Sectorial). ESTRUCTURA: (1) Section heading. (2) SPACER 8mm. (3) SI hay datos de timeline (fechas de participaciones): timeline chart (width=160mm, height=55mm). SI NO hay datos: NO mostrar placeholder gris. En su lugar, mostrar datos en formato textual: 'Primera participación: [fecha]. Última: [fecha]. Período de inactividad: [N] días.' en callout. (4) SPACER 8mm. (5) Layout 2 columnas (45/55): LEFT: donut chart (width=70mm). RIGHT: texto 'Distribución por Tipo' + interpretación + 'Presencia Regional' + 'Escala de Operación'. Todo en texto limpio 9pt, sin boxes. (6) SPACER 8mm. (7) Si hay espacio: 2-3 bullets de insight temporal ('La empresa concentra su actividad en LP...', 'Período de inactividad de N días detectado...'). Si no hay espacio: omitir. (8) Footer. PRINCIPIO: esta página debe sentirse aireada. Si hay poco contenido, está BIEN — espacio vacío intencional es mejor que relleno.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 8,
+      "name": "rewrite_pdf_page5_6",
+      "description": "REESCRIBIR Páginas 5 y 6. PÁGINA 5 (Costo de Oportunidad): (1) Section heading. (2) SPACER 8mm. (3) Waterfall chart full-width (width=160mm, height=65mm). (4) SPACER 6mm. (5) Tabla de escenarios: 4 columnas, 3 filas. Limpia, sin bordes verticales. Font 9pt. (6) SPACER 8mm. (7) Callout gold: 'Cada punto de Win Rate = $XMM anuales para su empresa.' Bold. 1 línea. (8) Footer. SIN segundo scatter chart — es redundante con pag 2. Menos es más. PÁGINA 6 (Recomendaciones): (1) Section heading. (2) SPACER 8mm. (3) 4 recomendaciones: cada una = número bold 11pt + título bold 10pt + texto 9pt max 2 líneas. Gap 6mm entre cada una. SIN cajas decorativas — solo texto limpio con número. (4) SPACER 12mm. (5) Divider gold fino. (6) SPACER 8mm. (7) Pricing: 3 tiers EN LÍNEA. Cada tier: título bold 10pt, precio bold 12pt, 3-4 bullets 8pt. Ancho 50mm cada uno, gap 7mm. Tier central con borde gold fino (highlight). Altura controlada — MAX 55mm por card. (8) SPACER 10mm. (9) CTA block navy: texto centrado 11pt + firma 9pt + email 8pt. Altura 35mm. (10) Disclaimer 7pt gris, 2 líneas max. (11) Footer. CLAVE: pricing cards DEBEN caber completas — si no, reducir bullets a 3 por tier.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 9,
+      "name": "generate_verify_all",
+      "description": "Regenerar TODOS los PDFs y verificar calidad. (1) Generar 4 PDFs: 132385-4, 121265-9, 105243-8, 137981-3. (2) Verificar: todos generan sin error, >150KB, 6 páginas, pasan assert_client_safe_binary. (3) Correr 865 tests — todos deben pasar. (4) Git commit con todos los cambios. (5) Crear autonomo/VISUAL_REDESIGN_REPORT.md con: qué se cambió, principios aplicados, antes/después conceptual.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pathlib import Path; pdfs=list(Path('data/output/diagnosticos_v2').glob('*.pdf')); assert len(pdfs)>=3; print(f'{len(pdfs)} PDFs OK')\" && python -m pytest tests/ -q --tb=no 2>&1 | tail -1",
+      "depends_on": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-03-28T05:00:00",
+  "rules": [
+    "ESTO ES UNA REESCRITURA TOTAL — no parchar código existente, reescribir funciones completas",
+    "LEER autonomo/CANVAS_DESIGN_SYSTEM.md y autonomo/DESIGN_PHILOSOPHY_INGENIA.md antes de cada feature",
+    "Layout engine con Y dinámico — NUNCA hardcodear posiciones. Cada método retorna new_y.",
+    "needs_new_page(height) antes de cada elemento — si no cabe, nueva página automática",
+    "BREATHING ROOM: 30% del espacio vertical debe ser aire. Si parece apretado, está mal.",
+    "MAX 1 chart por mitad de página. MAX 2 charts por página completa.",
+    "Figsize en inches DEBE corresponder al ancho real en mm (1in = 25.4mm)",
+    "Max 4 colores por página: navy, gris, blanco, gold (solo para highlights)",
+    "Texto: max 6 líneas por bloque. Si necesitas más, el texto es muy largo — cortar.",
+    "Si un elemento no cabe, hacerlo más pequeño o eliminarlo. NUNCA dejarlo cortado/solapado.",
+    "Cada página debe verse como si un diseñador la compuso a mano durante horas"
+  ]
+}
