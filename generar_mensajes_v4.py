@@ -47,7 +47,7 @@ def humanizar(nombre_raw: str) -> str:
     if not isinstance(nombre_raw, str):
         return str(nombre_raw)
     nombre = nombre_raw.split("|")[-1].strip() if "|" in nombre_raw else nombre_raw.strip()
-    formas = r"\b(SPA|LTDA|LIMITADA|EIRL|E\.I\.R\.L\.|S\.A\.|SA)\b\.?$"
+    formas = r"\b(SPA|LTDA|LIMITADA|EIRL|E\.I\.R\.L\.|S\.A\.|SA)\.?$"
     nombre = re.sub(formas, "", nombre, flags=re.IGNORECASE).strip(" .,")
     return nombre.title()
 
@@ -57,7 +57,7 @@ def limpiar_rival(rival_raw: str) -> str:
     if not isinstance(rival_raw, str) or not rival_raw.strip():
         return ""
     nombre = rival_raw.split("|")[-1].strip() if "|" in rival_raw else rival_raw.strip()
-    formas = r"\b(SPA|LTDA|LIMITADA|EIRL|E\.I\.R\.L\.|S\.A\.|SA)\b\.?$"
+    formas = r"\b(SPA|LTDA|LIMITADA|EIRL|E\.I\.R\.L\.|S\.A\.|SA)\.?$"
     nombre = re.sub(formas, "", nombre, flags=re.IGNORECASE).strip(" .,")
     return nombre.title()
 

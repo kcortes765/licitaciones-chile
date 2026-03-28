@@ -342,11 +342,7 @@ def main():
         "email", "web", "contacto_nombre", "direccion",
         "contact_score", "contact_reasons",
     ]
-    # Agregar score de negocio si existe
-    if score_col in df.columns:
-        export_cols.insert(3, score_col)
-    if "rank_ml" in df.columns:
-        export_cols.insert(4, "rank_ml")
+    # No incluir score interno ni rank ML en exports cliente-facing
     if "win_rate" in df.columns:
         export_cols.append("win_rate")
     if "total_bids" in df.columns:
