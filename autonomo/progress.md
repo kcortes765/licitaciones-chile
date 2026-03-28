@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 6/20
+## Features completadas: 7/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -177,3 +177,35 @@
 - Tests paramétricos en `TestAllScoresBounded` barren valores extremos y NaN para cada scoring function
 - Se corrigió expectativa de `test_1_at_lower_bound` (competencia): lower_bound=1 da score=0, no >0
 - Cobertura 202 tests supera los ~120 del plan gracias a parametrización exhaustiva
+
+### Sesión 7 — 2026-03-28 — Feature 7: test_pipeline_core
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_pipeline_core.py`: 80 tests exhaustivos para pipeline_core.py
+
+**Tests por clase** (80 total):
+1. `TestCombinedScoreWeights` (6 tests) — suma=1.0, keys score_total/km_score/xgb_score, all positive, score_total dominant
+2. `TestLeadSourcePriority` (4 tests) — 3 entries, orden enriched>ml_ranked>ranked
+3. `TestClientForbiddenColumns` (10 tests) — 8 columnas, parametrizado por columna esperada
+4. `TestFindBestLeadsPath` (5 tests) — prioridad enriched>ml>ranked, None si vacío, custom priority (usa tmp_path)
+5. `TestLoadBestLeadsDataframe` (3 tests) — FileNotFoundError si vacío, carga correcta, prioridad
+6. `TestRecomputeScoreTotal` (8 tests) — produce score_total [0,100], consistente con weights, missing col→ValueError, no modifica original, all zeros→0, all hundreds→100
+7. `TestRecomputeScoreCombined` (7 tests) — con ML signals usa pesos, sin ML→baseline=score_total, NaN ML→fallback, partial ML, missing score_total→ValueError, weights correctos
+8. `TestAssignClusterProfile` (5 tests) — 4 categorías BAJO/REGULAR/BUENO/IDEAL, missing score_combined→ValueError, distribución percentiles ~40/30/20/10
+9. `TestAssignRank` (5 tests) — empieza en 1, secuencial, descendente por score, custom columns, no modifica original
+10. `TestResolveScoreColumn` (3 tests) — score_combined>score_total>ValueError
+11. `TestResolveRankColumn` (3 tests) — rank_ml>rank>ValueError
+12. `TestBuildCrmDataframe` (10 tests) — columnas esperadas, NO columnas prohibidas, rank_ml/rank/generado para prioridad, canal WhatsApp default/custom, estado Pendiente, tender info, row count
+13. `TestContactCoverageSummary` (7 tests) — conteos correctos tel/email/web, columnas faltantes no crashean, DF vacío, todas las keys presentes
+14. `TestSeriesOrDefault` (4 tests) — columna existente, missing→default, preserva índice, DF vacío
+
+**Verificación**:
+- `python -m pytest tests/test_pipeline_core.py -v --tb=short` → **80 passed in 0.34s** (PASS)
+
+**Decisiones**:
+- Se creó helper `_make_scored_df()` para generar DataFrames con todas las 9 columnas score_{dim} + score_total calculado con pesos reales
+- Se usó `tmp_path` fixture de pytest para tests de filesystem (find_best_leads_path, load_best_leads_dataframe)
+- Tests cubren inmutabilidad (no modifica DF original) en recompute_score_total, recompute_score_combined, assign_cluster_profile, assign_rank
+- Cobertura 80 tests supera los ~45 del plan gracias a parametrización y edge cases adicionales
