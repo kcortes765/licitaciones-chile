@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 15/20
+## Features completadas: 16/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 5 (corregidos)
 
@@ -412,3 +412,26 @@
 
 **Verificación**:
 - `grep -rn` de patrones sensibles en *.py y *.md (excluyendo .env y .git) → **0 matches** (PASS)
+
+### Sesión 16 — 2026-03-28 — Feature 16: run_tests_fix_bugs
+
+**Estado**: COMPLETADA
+
+**Resultado**: Suite completa ejecutada — **863 tests passed, 0 failures** en 3.15s.
+
+**Tests por módulo**:
+- `test_config.py`: 79 passed
+- `test_utils.py`: 87 passed
+- `test_scoring.py`: 202 passed
+- `test_pipeline_core.py`: 80 passed
+- `test_validation.py`: 129 passed
+- `test_data_contracts.py`: 57 passed
+- `test_export_safety.py`: 65 passed
+- `test_messages.py`: 125 passed
+- `test_integration.py`: 39 passed
+
+**Bugs encontrados en esta sesión**: 0 — todos los bugs del pipeline fueron corregidos en features anteriores (fix_hardcoded_paths, fix_csv_export_leak, fix_viz_weights, regex humanizar/limpiar_rival en v3/v4).
+
+**Verificación**:
+- `python -m pytest tests/ -v --tb=short` → **863 passed in 3.15s** (PASS)
+- Criterio del plan: `tail -3 | grep 'passed'` → **PASS**
