@@ -63,7 +63,7 @@ PALETTE_DIV = "RdYlGn"
 CLUSTER_COLORS = ["#3498DB", "#E74C3C", "#2ECC71", "#F39C12", "#9B59B6",
                   "#1ABC9C", "#E67E22", "#34495E", "#C0392B", "#27AE60"]
 
-# Score dimension labels (Spanish)
+# Score dimension labels (Spanish) — derived from config.py SCORING_WEIGHTS
 SCORE_DIMS = {
     "score_actividad": "Actividad",
     "score_tamano": "Tamano",
@@ -71,22 +71,15 @@ SCORE_DIMS = {
     "score_recencia": "Recencia",
     "score_valor": "Valor",
     "score_competencia": "Competencia",
-    "score_digital": "Digital",
+    "score_oportunidad": "Oportunidad",
     "score_especializacion": "Especializacion",
     "score_region": "Region",
 }
 
 SCORE_COLS = list(SCORE_DIMS.keys())
 WEIGHT_LABELS = {
-    "score_actividad": "20%",
-    "score_tamano": "15%",
-    "score_win_rate": "12%",
-    "score_recencia": "12%",
-    "score_valor": "12%",
-    "score_competencia": "10%",
-    "score_digital": "7%",
-    "score_especializacion": "7%",
-    "score_region": "5%",
+    f"score_{dim}": f"{int(round(w * 100))}%"
+    for dim, w in SCORING_WEIGHTS.items()
 }
 
 

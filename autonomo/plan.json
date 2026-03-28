@@ -170,8 +170,8 @@
       "description": "Revisar 10_visualizations.py y verificar que usa SCORING_WEIGHTS de config.py directamente (no valores hardcoded). Si tiene pesos hardcoded, reemplazar con import de config.py. Verificar que la lista de dimensiones en los gráficos incluye las 9 dimensiones (especialmente score_oportunidad que según RETOMAR.md faltaba). Verificar que los labels de peso en gráficos coinciden con config.py (14% tamano, no 15%).",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"exec(open('10_visualizations.py').read().split('def ')[0]); from config import SCORING_WEIGHTS; print('OK: uses config weights')\" 2>&1 | tail -1",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {

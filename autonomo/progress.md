@@ -1,9 +1,9 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 13/20
+## Features completadas: 14/20
 ## Última sesión: 2026-03-28
-## Errores encontrados: 4 (corregidos)
+## Errores encontrados: 5 (corregidos)
 
 ---
 
@@ -363,3 +363,30 @@
 - `python -c "... bad=[c for c in df.columns if c in CLIENT_FORBIDDEN_COLUMNS]; assert not bad"` → **PASS**
 - `python -m pytest tests/test_export_safety.py -v` → **65 passed in 0.42s** (PASS)
 - CSV contiene solo: nombre, rut, region, total_bids, total_wins, win_rate, monto_promedio, n_LP, n_LE, dias_desde_ultima, competidores_promedio, tipo_mop, categoria_mop, telefono, email, web, contacto_nombre, direccion
+
+### Sesión 13 — 2026-03-28 — Feature 14: fix_viz_weights
+
+**Estado**: COMPLETADA
+
+**Archivos modificados**:
+- `lead_scoring/10_visualizations.py`: Corregidas dimensiones de scoring y pesos en gráficos
+
+**Bugs encontrados y corregidos**:
+
+1. **SCORE_DIMS incluía `score_digital` en lugar de `score_oportunidad`**: `score_digital` NO es una de las 9 dimensiones de scoring (es un score separado de enriquecimiento). La dimensión `score_oportunidad` (peso 10%) estaba completamente ausente de los gráficos. Fix: reemplazar `score_digital` por `score_oportunidad` en SCORE_DIMS.
+
+2. **WEIGHT_LABELS hardcoded con valores incorrectos**: Los pesos estaban escritos a mano y no coincidían con config.py:
+   - `score_tamano: "15%"` → debería ser `"14%"` (config: 0.14)
+   - `score_digital: "7%"` → no debería existir (no es dimensión de scoring)
+   - `score_especializacion: "7%"` → debería ser `"6%"` (config: 0.06)
+   - `score_region: "5%"` → debería ser `"4%"` (config: 0.04)
+   - Faltaba `score_oportunidad: "10%"`
+   Fix: generar WEIGHT_LABELS dinámicamente desde SCORING_WEIGHTS de config.py con dict comprehension.
+
+**Impacto**: Los gráficos 07 (radar), 09 (heatmap), 10 (violin), 11 (stacked bar top 10), 22 (stacked bar top 20) ahora muestran las 9 dimensiones correctas con pesos exactos de config.py. Ya no es posible que se desincronicen si se cambian los pesos en config.py.
+
+**Verificación**:
+- `exec(open('10_visualizations.py').read().split('def ')[0])` → **PASS** (importa y ejecuta sin error)
+- `grep score_digital 10_visualizations.py` → **0 matches** (eliminado)
+- `grep "15%\|7%\|5%" 10_visualizations.py` → **0 matches** (pesos hardcoded eliminados)
+- WEIGHT_LABELS generado: actividad=20%, tamano=14%, win_rate=12%, recencia=12%, valor=12%, competencia=10%, oportunidad=10%, especializacion=6%, region=4%
