@@ -1,7 +1,7 @@
 # Progress — Output Layer Modo Dios
 
 ## Estado: EN PROGRESO
-## Features completadas: 6/11
+## Features completadas: 7/11
 ## Ultima sesion: 2026-03-28
 ## Errores encontrados: 0
 
@@ -222,3 +222,67 @@ Reescritos desde cero los 6 documentos comerciales en `commercial/` a nivel cons
 - Pricing consistente: $190K/$250K/$490K en todos los documentos
 
 Archivos modificados: `commercial/OFERTA_SERVICIO.md`, `commercial/PROPUESTA_BASE.md`, `commercial/TARIFARIO.md`, `commercial/FOLLOWUP_SEQUENCE.md`, `commercial/ANALISIS_GRATIS_TEMPLATE.md`, `commercial/NDA_SIMPLE.md`
+
+### Sesion 7 — 2026-03-28
+**Feature 7: guion_whatsapp_v2** — COMPLETADA
+
+Reescrito desde cero `GUION-WHATSAPP.md` a nivel consultoria de elite (17,451 chars, antes ~5,200):
+
+**Estructura del funnel (6 pasos):**
+
+**PASO 1 — Mensaje cold:** No se toca. Viene del generador automatico (mensajes_wsp_v6.txt).
+
+**PASO 2 — Enganche (3 casos):**
+- Caso A (interes directo): Dato concreto de rival + patron + oferta de ejemplo puntual. Tono de ingeniero que encontro un patron, no vendedor.
+- Caso B (curioso/esceptico): Presentacion como ingeniero civil UCN + escala de datos (1.8M registros) + hallazgo breve + oferta de ejemplo.
+- Caso C (respuesta corta): Directo al Paso 3 sin pedir permiso.
+
+**PASO 3 — Mini-analisis por chat (demo):**
+- Estructura fija de 6-8 bullets verificados contra datos reales
+- Campos: Tipo/Region/Monto | Adjudicador | Participantes | Criterio dominante | Factor decisivo | Patron rival | Oportunidad
+- Cierre con ancla: "Esto es 1 licitacion. El diagnostico cubre las [N] donde han participado."
+- NO incluir precio aqui — esperar que pregunten
+
+**PASO 4 — Cierre y pricing:**
+- Escenario A: Pregunta precio → $190K base con descripcion detallada del entregable (PDF 6 paginas, radar, rivales, costo oportunidad, recomendaciones)
+- Escenario B: Acepta → datos de transferencia con monto IVA incluido ($226.100)
+- Escenario C: Confirmacion de pago → mensaje corto profesional
+- Escenario D: Tier avanzado → $250K para empresas grandes con extras (benchmark top 10%, estrategia por tipo)
+
+**PASO 5 — Entrega PDF:**
+- 3 hallazgos principales resumidos (ni mas ni menos)
+- Apuntar a pagina especifica (p.5 costo oportunidad) para engagement
+- No ofrecer llamada, no pedir feedback inmediato
+
+**PASO 6 — Upsell mensual:**
+- Timing: 24-48h despues de entrega (no inmediato)
+- Copy: transicion natural de "foto fija" a "monitoreo continuo"
+- 4 entregables semanales detallados: oportunidades, rivales, recomendacion, soporte
+- $490K/mes sin permanencia
+- Sub-respuesta para "que incluye exactamente?"
+
+**OBJECIONES (6 reescritas con sofisticacion):**
+1. "Es caro" → Contextualizar vs monto promedio de licitaciones del prospecto
+2. "Lo veo despues" → Fijar fecha concreta en 2 semanas
+3. "Es una IA?" → Analogia con herramientas de ingenieria (SAP2000/Presto), 1.8M registros
+4. "Ya lo hacemos" → Diferencia entre leer bases propias vs cruzar todos los competidores
+5. "No licitamos mucho" → Argumento inverso: mas razon para elegir bien donde participar
+6. "Que garantia?" → Anclar en el mini-analisis ya entregado como prueba de calidad
+
+**FOLLOW-UP (4 touchpoints con dato concreto):**
+1. 48h: Win rate vs promedio region + cuantificacion en pesos del gap
+2. 5 dias: Patron de rival con licitaciones recientes
+3. 10 dias: Cierre elegante con "cada punto de WR = $XM anuales"
+4. 30 dias: Reactivacion solo con dato fresco real (3 opciones: oportunidades nuevas, adjudicaciones rival, LP abiertas)
+
+**10 reglas generales** incluyendo: dato concreto obligatorio, 0 terminos prohibidos, pricing fijo sin negociar, sin emojis, sin "estimado/a".
+
+**Verificacion:**
+- 17,451 caracteres (>5,000 requerido)
+- 8/8 secciones presentes (PASO 1-6, OBJECIONES, SEGUIMIENTO)
+- 0 terminos prohibidos (score_total, cluster, km_score, etc.)
+- Pricing consistente: $190K/$250K/$490K
+- Tono: ingeniero senior, no vendedor
+- Todos los mensajes en bloques de codigo copy-paste ready
+
+Archivos modificados: `GUION-WHATSAPP.md`

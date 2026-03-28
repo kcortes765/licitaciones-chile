@@ -88,8 +88,8 @@
       "description": "Reescribir GUION-WHATSAPP.md completo. El guión actual tiene buen flujo pero el copy es genérico. Reescribir cada paso con copy premium que refleje que detrás hay un producto de $250K, no un pitch genérico. (PASO 1): Ya viene del generador de mensajes — no tocar. (PASO 2 — responden): 3 casos (interés, curioso, corto) con copy que demuestre dominio del sector. Mencionar datos específicos del lead por chat. Usar lenguaje de ingeniero, no de vendedor. (PASO 3 — demo): Mini-análisis por chat: 6-8 bullets con ESTRUCTURA FIJA que siempre siga: Licitación [CODIGO] | Monto: $X | Tipo: LP | Adjudicó: [RIVAL] con [diferenciador]. Criterio clave: [qué definió]. Oportunidad: [qué mejorar]. Esto debe parecer un preview del PDF premium, no un resumen genérico. (PASO 4 — cierre): Pricing reveal natural, sin presión. Describir exactamente qué reciben (PDF de 6 páginas con radar, rivales, costo de oportunidad, recomendaciones). (PASO 5 — entrega): Copy para enviar PDF + 3 bullets de resumen. (PASO 6 — upsell): Transición natural a mensual. OBJECIONES: Reescribir las 6 objeciones con respuestas más sofisticadas que demuestren conocimiento del sector. FOLLOW-UP: 4 touchpoints con copy exacto. Formato: cada mensaje en bloque de código listo para copiar-pegar.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"text=open('GUION-WHATSAPP.md',encoding='utf-8').read(); assert len(text) > 5000, 'Guion muy corto'; assert 'PASO 2' in text; assert 'PASO 6' in text; print('Guion v2 OK')\"",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
