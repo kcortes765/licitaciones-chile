@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 8/20
+## Features completadas: 9/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -239,3 +239,28 @@
 - Se usó `tmp_path` fixture de pytest para tests de filesystem (write_run_manifest, write_validation_report, assert_client_safe_binary)
 - Se testearon funciones internas `_scan_text_forbidden` y `_extract_text_like_chunks` para cobertura completa
 - Cobertura 129 tests supera ampliamente los ~60 del plan gracias a parametrización y edge cases adicionales
+
+### Sesión 9 — 2026-03-28 — Feature 9: test_data_contracts
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_data_contracts.py`: 57 tests sobre datos reales en parquets
+
+**Tests por clase** (57 total):
+1. `TestCompanyDatabase` (12 tests) — columnas requeridas, RUTs únicos, sin RUTs nulos, win_rate [0,1], total_bids>=0, total_wins>=0, total_wins<=total_bids, monto_promedio>=0, dias_desde_ultima>=0, n_LP/n_LE/n_L1>=0, pasa contrato pipeline, >100 filas
+2. `TestLeadsRanked` (10 tests) — columnas requeridas, RUTs únicos, score_total [0,100], rank desde 1 secuencial sin huecos, 9 dimensiones de score presentes y en [0,100], win_rate [0,1], pasa contrato, score_total recomputable (tolerancia 0.5)
+3. `TestLeadsMlRanked` (11 tests) — columnas requeridas, RUTs únicos, score_combined [0,100], score_total [0,100], rank_ml desde 1 secuencial, xgb_score [0,100], km_score [0,100], pasa contrato, score_combined recomputable, cluster_perfil tiene 4 categorías válidas
+4. `TestLeadsEnriched` (9 tests) — columnas requeridas, RUTs únicos, score_digital [0,100], columnas de contacto (telefono/email/web), score_total y score_combined [0,100], pasa contrato, es subconjunto de ml_ranked, al menos algunos contactos existen
+5. `TestLossAnalysis` (9 tests) — columnas requeridas, RUTs únicos, loss_rate [0,1], total_participated>=0, total_won>=0, total_won<=total_participated, total_lost_loss>=0, pasa contrato, loss_rate consistente con total_lost_loss/total_participated
+6. `TestCrossDatasetConsistency` (6 tests) — ranked⊂company_db, ranked<=company_db en tamaño, ml_ranked==ranked en tamaño, enriched⊂ml_ranked, score_total recomputable desde dims (>=99%), score_combined recomputable (>=99%)
+
+**Verificación**:
+- `python -m pytest tests/test_data_contracts.py -v --tb=short` → **57 passed in 0.96s** (PASS)
+
+**Decisiones**:
+- Skip markers definidos localmente (no se puede importar directamente de conftest.py por la mecánica especial de pytest)
+- Se usaron paths de config.py (FILTERED_DIR, OUTPUT_DIR) para consistencia con el pipeline
+- loss_analysis usa `total_lost_loss` como columna de pérdidas (diferente de `total_lost` del dataset base)
+- Tests de recomputación usan tolerancia 0.5 para score_total y score_combined, con umbral de >=99% de filas consistentes
+- Tests de consistencia cross-dataset verifican que los datasets se encadenan correctamente (company_db → ranked → ml_ranked → enriched)
