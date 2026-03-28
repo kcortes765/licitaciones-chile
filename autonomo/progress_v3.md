@@ -1,7 +1,7 @@
 # Progress — Visual Redesign Museo
 
 ## Estado: EN PROGRESO
-## Features completadas: 6/9
+## Features completadas: 7/9
 ## Ultima sesion: 2026-03-28
 
 ---
@@ -132,3 +132,30 @@
 - Logica de espacio: tabla licitaciones se omite si no cabe junto a tabla comparativa
 - Verificacion: `python generate_pdf_v2.py 132385-4` → 260 KB, 6 paginas — OK
 - Verificacion: `python generate_pdf_v2.py 121265-9` → 255 KB, 6 paginas — OK
+
+### 2026-03-28 — Feature 7: rewrite_pdf_page4
+- **Status**: DONE
+- Pagina 4 reescrita en `lead_scoring/generate_pdf_v2.py` usando MuseumPDF layout engine
+- ZERO legacy methods: eliminados section_title, embed_chart, _set_font, _set_color, text_block, professional_footer, spacer("sm"/"xs"), divider("light"), LAYOUT dict refs
+- Usa exclusivamente API museo: section_heading, chart_block, callout, footer_block, _font, _color, spacer(mm=N), needs_new_page, image()
+- Section heading: "3 Analisis Temporal y Sectorial" con circulo navy + subtitulo gris
+- SPACER 8mm breathing room post-heading
+- Timeline: condicional con has_bid_dates
+  - Si hay bid_history con fechas: chart_block full-width (160mm)
+  - Si no hay datos: callout textual con primera_oferta, ultima_oferta, dias, total_bids (NO placeholder gris)
+- SPACER 8mm
+- Layout 2 columnas (45/55): donut (LEFT 70mm) + texto interpretativo (RIGHT)
+  - "Distribucion por Tipo" h3 navy + body text 9pt con interpretacion contextual
+  - Tipo dominante con % y lectura estrategica (LP/L1/diversificado)
+  - "Presencia Regional" body_b navy + region principal
+  - "Escala de Operacion" body_b navy + monto promedio vs rubro
+  - pdf._y = max(donut_bottom, text_bottom) — columnas independientes
+- SPACER 8mm
+- Insights temporales (condicional: solo si hay espacio)
+  - Max 3 bullets: tipo dominante, inactividad, escala
+  - space_left calculado vs usable_bottom — si no cabe, omite (espacio vacio intencional)
+- Footer via footer_block(page_num=4, total_pages=6)
+- ZERO posiciones Y hardcodeadas — todo via layout engine (_y tracking)
+- Pagina aireada: espacio vacio intencional es mejor que relleno
+- Verificacion: `python generate_pdf_v2.py 132385-4` → 244 KB, 6 paginas — OK
+- Verificacion: `python generate_pdf_v2.py 121265-9` → 240 KB, 6 paginas — OK

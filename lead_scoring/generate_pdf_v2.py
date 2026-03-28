@@ -950,13 +950,22 @@ def _build_page_3(pdf, data, tmp_dir):
 
 
 def _build_page_4(pdf, data, tmp_dir):
-    """PAGE 4: Analisis Temporal y Sectorial — timeline, donut, presencia regional."""
+    """PAGE 4: Analisis Temporal y Sectorial — timeline, donut, presencia regional.
+
+    Layout museo con Y dinamico: ZERO posiciones hardcodeadas.
+    Estructura:
+      1. Section heading
+      2. Timeline chart (160mm) o callout textual si no hay bid_history
+      3. Layout 2 columnas (45/55): donut (LEFT) + texto (RIGHT)
+      4. Insights temporales (si hay espacio)
+      5. Footer
+    """
     company = data.get("company", {})
     industry = data.get("industry", {})
+    bids = data.get("bid_history", [])
 
     total_bids = int(company.get("total_bids", 0))
     total_wins = int(company.get("total_wins", 0))
-    wr = float(company.get("win_rate", 0))
     dias = int(company.get("dias_desde_ultima", 0) or 0)
     n_lp = int(company.get("n_LP", 0) or 0)
     n_le = int(company.get("n_LE", 0) or 0)
@@ -967,150 +976,215 @@ def _build_page_4(pdf, data, tmp_dir):
 
     pdf.add_page()
 
-    # --- Section title ---
-    pdf.section_title(3, "Analisis Temporal y Sectorial",
-                      "Tendencias, distribucion por tipo y presencia regional")
-    pdf.spacer("sm")
+    # ── Section heading ──
+    pdf.section_heading(3, "Analisis Temporal y Sectorial",
+                        "Tendencias, distribucion por tipo y presencia regional")
 
-    # --- Timeline chart ---
-    timeline_path = str(Path(tmp_dir) / "timeline.png")
-    gen_timeline(data, timeline_path)
+    pdf.spacer(mm=8)
 
-    y_chart = pdf.get_y()
-    pdf.embed_chart(timeline_path, x=LAYOUT["margin_left"], y=y_chart,
-                    w=LAYOUT["content_w"], h=55,
-                    caption="Historial de participaciones en licitaciones publicas")
+    # ══════════════════════════════════════════════════════
+    # Timeline: chart full-width (160mm) o callout textual
+    # Si hay bid_history con fechas: chart. Si no: callout.
+    # ══════════════════════════════════════════════════════
+    has_bid_dates = False
+    if bids:
+        for bid in bids:
+            fecha = pd.to_datetime(bid.get("fecha"), errors="coerce")
+            if not pd.isna(fecha):
+                has_bid_dates = True
+                break
 
-    pdf.spacer("xs")
-
-    # --- Texto interpretativo timeline ---
-    if dias <= 90:
-        trend_text = (
-            "La empresa muestra actividad reciente, con su ultima participacion "
-            "hace {} dias. Esto indica presencia activa en el mercado.".format(dias)
-        )
-    elif dias <= 365:
-        trend_text = (
-            "Han transcurrido {} dias desde la ultima participacion registrada. "
-            "La empresa mantiene presencia intermitente en el mercado.".format(dias)
-        )
+    if has_bid_dates:
+        timeline_path = str(Path(tmp_dir) / "timeline.png")
+        gen_timeline(data, timeline_path)
+        pdf.chart_block(timeline_path,
+                        caption="Historial de participaciones en licitaciones publicas",
+                        width_mm=160)
     else:
-        trend_text = (
-            "Se detecta un periodo de inactividad de {} dias. Los competidores "
-            "directos continuan participando en procesos de su region y segmento, "
-            "lo que puede erosionar su posicionamiento.".format(dias)
-        )
+        # Sin datos detallados de timeline — callout textual
+        primera = company.get("primera_oferta")
+        ultima = company.get("ultima_oferta")
 
-    pdf.text_block(trend_text, style="body", color="text_primary", line_height=5)
-    pdf.spacer("sm")
+        parts = []
+        if pd.notna(primera):
+            try:
+                parts.append("Primera participacion: {}.".format(
+                    pd.to_datetime(primera).strftime("%d/%m/%Y")))
+            except Exception:
+                pass
+        if pd.notna(ultima):
+            try:
+                parts.append("Ultima participacion: {}.".format(
+                    pd.to_datetime(ultima).strftime("%d/%m/%Y")))
+            except Exception:
+                pass
+        if dias > 0:
+            parts.append("Periodo de inactividad: {} dias.".format(dias))
+        if total_bids > 0:
+            parts.append("{} participaciones registradas, {} adjudicadas.".format(
+                total_bids, total_wins))
 
-    pdf.divider("light")
-    pdf.spacer("xs")
+        callout_text = " ".join(parts) if parts else (
+            "Historial detallado de participaciones no disponible.")
+        pdf.callout(callout_text)
 
-    # --- Donut chart + texto lado a lado ---
+    pdf.spacer(mm=8)
+
+    # ══════════════════════════════════════════════════════
+    # Layout 2 columnas (45/55): donut (LEFT) + texto (RIGHT)
+    # LEFT: donut chart (width=70mm)
+    # RIGHT: Distribucion por Tipo + Presencia Regional + Escala
+    # ══════════════════════════════════════════════════════
     donut_path = str(Path(tmp_dir) / "donut.png")
     gen_tipo_donut(data, donut_path)
 
-    y_donut = pdf.get_y()
-    pdf.embed_chart(donut_path, x=LAYOUT["margin_left"], y=y_donut,
-                    w=LAYOUT["col_half"], h=70)
+    donut_w = 70
+    col_gap = 5
+    text_w = pdf.CONTENT_W - donut_w - col_gap
+    text_x = pdf.LEFT + donut_w + col_gap
+    y_row = pdf._y
 
-    # Texto interpretativo a la derecha del donut
-    text_x = LAYOUT["margin_left"] + LAYOUT["col_half"] + LAYOUT["col_gutter"]
-    text_w = LAYOUT["col_half"]
+    # LEFT: donut chart (70mm ~ 2.76in, figsize 2.8in @ DPI 200)
+    pdf.image(donut_path, x=pdf.LEFT, y=y_row, w=donut_w)
+    donut_bottom = pdf.get_y()
 
-    pdf._set_font("h3")
-    pdf._set_color("navy", "text")
-    pdf.set_xy(text_x, y_donut + 2)
+    # RIGHT: texto interpretativo
+    fy = y_row
+
+    # "Distribucion por Tipo" heading
+    pdf._font("h3")
+    pdf._color("navy", "text")
+    pdf.set_xy(text_x, fy)
     pdf.cell(text_w, 7, _s("Distribucion por Tipo"), align="L")
+    fy += 9
 
-    pdf._set_font("body")
-    pdf._set_color("text_primary", "text")
-    pdf.set_xy(text_x, y_donut + 11)
+    # Interpretacion
+    pdf._font("body")
+    pdf._color("dark_gray", "text")
+    pdf.set_xy(text_x, fy)
 
     total_tipos = n_lp + n_le + n_l1
     if total_tipos > 0:
-        # Identificar tipo dominante
-        tipos = [("Licitacion Publica (LP)", n_lp), ("Licitacion Especial (LE)", n_le),
+        tipos = [("Licitacion Publica (LP)", n_lp),
+                 ("Licitacion Especial (LE)", n_le),
                  ("Trato Directo (L1)", n_l1)]
         tipos_sorted = sorted(tipos, key=lambda x: x[1], reverse=True)
         dom_name, dom_count = tipos_sorted[0]
         dom_pct = dom_count / total_tipos * 100
 
-        dist_text = (
-            "La actividad se concentra en {}: {} de {} "
-            "participaciones ({:.0f}%). ".format(
-                dom_name, dom_count, total_tipos, dom_pct
-            )
-        )
+        dist_text = "Concentracion en {}: {} de {} ({:.0f}%).".format(
+            dom_name, dom_count, total_tipos, dom_pct)
+
         if n_lp > 0 and n_lp / total_tipos > 0.5:
-            dist_text += (
-                "La alta proporcion en LP indica que la empresa compite "
-                "regularmente en procesos de mayor cuantia, donde la "
-                "competencia es mas intensa pero los contratos mas rentables."
-            )
+            dist_text += (" Alta proporcion en LP indica competencia "
+                          "en procesos de mayor cuantia.")
         elif n_l1 > 0 and n_l1 / total_tipos > 0.5:
-            dist_text += (
-                "La concentracion en L1 sugiere un perfil de operaciones "
-                "menores. Diversificar hacia LP podria abrir acceso a "
-                "contratos de mayor envergadura."
-            )
+            dist_text += (" Concentracion en L1 sugiere operaciones "
+                          "menores. Diversificar hacia LP es recomendable.")
         else:
-            dist_text += (
-                "La diversificacion entre tipos de licitacion indica "
-                "flexibilidad operativa para competir en distintos segmentos."
-            )
+            dist_text += (" Diversificacion entre tipos indica "
+                          "flexibilidad operativa.")
     else:
-        dist_text = "No se dispone de informacion detallada por tipo de licitacion."
+        dist_text = "Sin informacion detallada por tipo de licitacion."
 
-    pdf.multi_cell(text_w, 4.5, _s(dist_text), align="L")
+    pdf.multi_cell(text_w, 5, _s(dist_text), align="L")
+    fy = pdf.get_y() + 6
 
-    # --- Presencia regional ---
-    pdf.set_xy(text_x, pdf.get_y() + 4)
-    pdf._set_font("body_b")
-    pdf._set_color("navy", "text")
+    # "Presencia Regional" heading
+    pdf.set_font("Helvetica", "B", 9)
+    pdf._color("navy", "text")
+    pdf.set_xy(text_x, fy)
     pdf.cell(text_w, 5, _s("Presencia Regional"), align="L")
-    pdf.set_xy(text_x, pdf.get_y() + 6)
+    fy += 7
 
-    pdf._set_font("body")
-    pdf._set_color("text_primary", "text")
-    region_text = "Region principal de operacion: {}.".format(region)
-    pdf.multi_cell(text_w, 4.5, _s(region_text), align="L")
+    pdf._font("body")
+    pdf._color("dark_gray", "text")
+    pdf.set_xy(text_x, fy)
+    pdf.multi_cell(text_w, 5, _s("Region principal: {}.".format(region)), align="L")
+    fy = pdf.get_y() + 6
 
-    # --- Rango de montos ---
-    pdf.set_xy(text_x, pdf.get_y() + 3)
-    pdf._set_font("body_b")
-    pdf._set_color("navy", "text")
+    # "Escala de Operacion" heading
+    pdf.set_font("Helvetica", "B", 9)
+    pdf._color("navy", "text")
+    pdf.set_xy(text_x, fy)
     pdf.cell(text_w, 5, _s("Escala de Operacion"), align="L")
-    pdf.set_xy(text_x, pdf.get_y() + 6)
+    fy += 7
 
-    pdf._set_font("body")
-    pdf._set_color("text_primary", "text")
+    pdf._font("body")
+    pdf._color("dark_gray", "text")
+    pdf.set_xy(text_x, fy)
     if monto_prom > 0:
-        monto_text = "Monto promedio por licitacion: {}".format(_money(monto_prom))
+        monto_text = "Monto promedio: {}".format(_money(monto_prom))
         if avg_monto > 0:
             ratio = monto_prom / avg_monto
             if ratio > 1.2:
-                monto_text += " (superior al promedio del rubro: {}).".format(
-                    _money(avg_monto)
-                )
+                monto_text += " (superior al rubro: {}).".format(_money(avg_monto))
             elif ratio < 0.8:
-                monto_text += " (inferior al promedio del rubro: {}).".format(
-                    _money(avg_monto)
-                )
+                monto_text += " (inferior al rubro: {}).".format(_money(avg_monto))
             else:
-                monto_text += " (en linea con el promedio del rubro: {}).".format(
-                    _money(avg_monto)
-                )
+                monto_text += " (en linea con el rubro: {}).".format(_money(avg_monto))
         else:
             monto_text += "."
     else:
-        monto_text = "Informacion de montos no disponible."
+        monto_text = "Montos no disponibles."
 
-    pdf.multi_cell(text_w, 4.5, _s(monto_text), align="L")
+    pdf.multi_cell(text_w, 5, _s(monto_text), align="L")
+    text_bottom = pdf.get_y()
 
-    # --- Footer ---
-    pdf.professional_footer(page_num=4, total_pages=6)
+    # Sincronizar columnas
+    pdf._y = max(donut_bottom, text_bottom)
+
+    pdf.spacer(mm=8)
+
+    # ══════════════════════════════════════════════════════
+    # Insights temporales — solo si hay espacio
+    # 2-3 bullets de insight. Si no cabe: omitir.
+    # ══════════════════════════════════════════════════════
+    insight_h = 25  # ~3 bullets at 5mm + gap
+    space_left = pdf.usable_bottom - pdf._y - 10  # 10mm margin before footer
+
+    if space_left >= insight_h:
+        insights = []
+
+        # Tipo dominante
+        if total_tipos > 0:
+            tipos_check = [("LP", n_lp), ("LE", n_le), ("L1", n_l1)]
+            dom = max(tipos_check, key=lambda x: x[1])
+            if dom[1] / total_tipos > 0.6:
+                insights.append(
+                    "La empresa concentra {:.0f}% de su actividad en {}.".format(
+                        dom[1] / total_tipos * 100, dom[0]))
+
+        # Inactividad
+        if dias > 180:
+            insights.append(
+                "Periodo de inactividad de {} dias detectado. "
+                "Competidores directos continuan activos.".format(dias))
+        elif dias > 0 and dias <= 90:
+            insights.append(
+                "Actividad reciente (hace {} dias). "
+                "Presencia activa en el mercado.".format(dias))
+
+        # Escala
+        if monto_prom > 0 and avg_monto > 0:
+            ratio = monto_prom / avg_monto
+            if ratio > 1.5:
+                insights.append(
+                    "Opera en licitaciones de escala superior al "
+                    "promedio del rubro ({} vs {}).".format(
+                        _money(monto_prom), _money(avg_monto)))
+
+        if insights:
+            for ins in insights[:3]:
+                pdf.needs_new_page(7)
+                pdf._font("body")
+                pdf._color("dark_gray", "text")
+                pdf.set_xy(pdf.LEFT, pdf._y)
+                pdf.multi_cell(pdf.CONTENT_W, 5, _s("- " + ins), align="L")
+                pdf._y = pdf.get_y() + pdf.TEXT_GAP
+
+    # ── Footer ──
+    pdf.footer_block(page_num=4, total_pages=6)
 
 
 def _build_page_5(pdf, data, tmp_dir):
