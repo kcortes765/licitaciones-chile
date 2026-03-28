@@ -1,7 +1,7 @@
 # Progress — Output Layer Modo Dios
 
 ## Estado: EN PROGRESO
-## Features completadas: 1/11
+## Features completadas: 2/11
 ## Ultima sesion: 2026-03-28
 ## Errores encontrados: 0
 
@@ -36,3 +36,24 @@ Creado `lead_scoring/pdf_design.py` con sistema de diseno premium:
 - Verificacion: `from pdf_design import *` OK, todos los componentes testeados
 
 Archivos creados: `lead_scoring/pdf_design.py`
+
+### Sesion 2 — 2026-03-28
+**Feature 2: pdf_charts_premium** — COMPLETADA
+
+Creado `lead_scoring/pdf_charts.py` con 7 funciones de graficos premium publicacion-ready:
+- `gen_win_rate_gauge`: gauge semicircular con zonas rojo/amarillo/verde, aguja, marker promedio rubro
+- `gen_radar_premium`: radar 8 ejes con relleno semi-transparente, linea P50, valores en cada punto
+- `gen_competitor_bars`: barras horizontales degradado rojo->naranja, mini-barra gris contexto, conteo + %
+- `gen_timeline`: linea temporal participaciones (fecha vs monto, color gano/perdio), linea tendencia (NUEVO)
+- `gen_market_position`: scatter WR vs total_bids, empresa destacada punto grande+borde dorado, cuadrantes
+- `gen_opportunity_waterfall`: waterfall ingresos actuales -> +5pp -> prom rubro -> top10% -> potencial
+- `gen_tipo_donut`: donut LP/LE/L1 con total en centro, leyenda debajo
+
+Caracteristicas:
+- DPI 200, fondo blanco, tipografia consistente
+- Usa MCOLORS y COLORS de pdf_design.py
+- _style_ax() helper para estilo base consistente
+- Manejo robusto de datos faltantes (fallbacks elegantes)
+- 7/7 charts testeados OK con datos sinteticos
+
+Archivos creados: `lead_scoring/pdf_charts.py`
