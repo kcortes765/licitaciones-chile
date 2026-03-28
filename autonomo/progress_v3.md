@@ -1,7 +1,7 @@
 # Progress — Visual Redesign Museo
 
-## Estado: EN PROGRESO
-## Features completadas: 7/9
+## Estado: COMPLETADO
+## Features completadas: 9/9
 ## Ultima sesion: 2026-03-28
 
 ---
@@ -159,3 +159,53 @@
 - Pagina aireada: espacio vacio intencional es mejor que relleno
 - Verificacion: `python generate_pdf_v2.py 132385-4` → 244 KB, 6 paginas — OK
 - Verificacion: `python generate_pdf_v2.py 121265-9` → 240 KB, 6 paginas — OK
+
+### 2026-03-28 — Feature 8: rewrite_pdf_page5_6
+- **Status**: DONE
+- Paginas 5 y 6 reescritas en `lead_scoring/generate_pdf_v2.py` usando MuseumPDF layout engine
+- ZERO legacy methods: eliminados section_title, embed_chart, _set_font, _set_color, insight_callout, comparison_table, professional_footer, spacer("sm"/"xs"/"md"), pricing_tier, cta_card, LAYOUT dict refs
+- Usa exclusivamente API museo: section_heading, chart_block, data_table, callout, pricing_cards, cta_block, footer_block, divider, _font, _color, spacer(mm=N), needs_new_page
+- **Pagina 5 — Costo de Oportunidad**:
+  - Section heading: "4 Costo de Oportunidad" con circulo navy + subtitulo gris
+  - SPACER 8mm breathing room post-heading
+  - Waterfall chart full-width via chart_block(width_mm=160) con caption
+  - SPACER 6mm
+  - Titulo "Escenarios de Mejora" h3 navy + TEXT_GAP
+  - Tabla escenarios: 4 cols (Escenario, Win Rate, Adjudic. Extra, Ingresos), 3 filas via data_table(bold_col=3)
+  - SPACER 8mm
+  - Callout gold: "Cada punto de Win Rate = $XMM anuales" via callout()
+  - SIN scatter chart — redundante con pagina 2 (menos es mas)
+  - Footer via footer_block(page_num=5, total_pages=6)
+- **Pagina 6 — Recomendaciones y Siguiente Paso**:
+  - Section heading: "4 Recomendaciones y Siguiente Paso" con circulo navy + subtitulo gris
+  - SPACER 8mm breathing room post-heading
+  - 4 recomendaciones: numero bold 11pt + titulo bold 10pt + texto 9pt max 2 lineas (~140 chars)
+  - Gap 6mm entre recomendaciones. SIN cajas decorativas — solo texto limpio con numero
+  - SPACER 6mm + divider gold fino + SPACER 8mm
+  - Pricing: 3 tiers en linea via pricing_cards() — Diagnostico ($190K), Analisis ($250K, highlighted), Monitoreo ($490K/mes)
+  - Tier central con borde gold (highlighted=True). Max 3-4 bullets por tier.
+  - SPACER 10mm
+  - CTA block navy via cta_block(): "Siguiente Paso" + firma Sebastian Cortes + contacto
+  - Disclaimer 7pt gris centrado, condensado a 2 lineas
+  - Footer via footer_block(page_num=6, total_pages=6)
+- ZERO posiciones Y hardcodeadas — todo via layout engine (_y tracking)
+- Verificacion: `python generate_pdf_v2.py 132385-4` → 192 KB, 6 paginas — OK
+- Verificacion: `python generate_pdf_v2.py 121265-9` → 192 KB, 6 paginas — OK
+
+### 2026-03-28 — Feature 9: generate_verify_all
+- **Status**: DONE
+- Generados 4 PDFs: 132385-4 (GUERCUT, 192KB), 121265-9 (CONSTRUCTORA SYNEL, 192KB), 105243-8 (Mecvalves, 191KB), 137981-3 (CONSTRUCCIONES HERRERA, 189KB)
+- Todos: 6 paginas, >150KB, zero errores
+- Todos pasan `assert_client_safe_binary` — zero tokens internos expuestos
+- 865/865 tests pasando (6.22s)
+- Creado `autonomo/VISUAL_REDESIGN_REPORT.md` con reporte completo del redesign
+- plan_v3.json actualizado: feature 9 status=done, 9/9 features completadas
+- progress_v3.md actualizado: estado COMPLETADO
+
+---
+
+## Resumen Final
+
+**Visual Redesign Museo — COMPLETADO**
+
+9/9 features implementadas. 3 archivos core reescritos desde cero (pdf_design.py, pdf_charts.py, generate_pdf_v2.py). 2 documentos de referencia creados (DESIGN_PHILOSOPHY_INGENIA.md, CANVAS_DESIGN_SYSTEM.md). Filosofia "Engineered Clarity" aplicada en cada pagina. Layout engine dinamico con zero overlaps. 4 PDFs verificados. 865 tests pasando.

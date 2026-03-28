@@ -102,7 +102,10 @@ LAYOUT = {
     "sp_xl":         18,
     "sp_section":    12,
     "col_full":      165,
+    "col_half":      79,    # (165 - 6) / 2 ~ 79.5
+    "col_third":     51,    # (165 - 2*6) / 3 = 51
     "col_gutter":    6,
+    "card_h":        25,
     "footer_y":      275,   # 297 - 22
 }
 
@@ -757,7 +760,12 @@ class MuseumPDF(FPDF):
     def spacer(self, mm=None, size="md"):
         """Espacio vertical. mm override o size preset. Retorna nueva _y."""
         if mm is not None:
-            self._y += mm
+            if isinstance(mm, str):
+                # Legacy call: spacer("sm") — string as positional arg
+                sizes = {"xs": 2, "sm": 4, "md": 6, "lg": 12, "xl": 18}
+                self._y += sizes.get(mm, 6)
+            else:
+                self._y += mm
         else:
             sizes = {"xs": 2, "sm": 4, "md": 6, "lg": 12, "xl": 18}
             self._y += sizes.get(size, 6)

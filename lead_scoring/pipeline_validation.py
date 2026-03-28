@@ -106,12 +106,19 @@ def _scan_text_forbidden(text: str) -> list[str]:
     return matches
 
 
+_STREAM_BLOCK_PATTERN = re.compile(rb"\bstream\b.*?\bendstream\b", re.DOTALL)
+
+
 def _extract_text_like_chunks(data: bytes) -> str:
     """
     Extrae segmentos imprimibles desde binarios para evitar buscar substrings
     crudas dentro del stream completo del PDF.
+
+    Excluye bloques stream...endstream que contienen datos comprimidos
+    (imagenes, fonts) donde secuencias aleatorias pueden causar falsos positivos.
     """
-    chunks = _BINARY_TEXT_CHUNK_PATTERN.findall(data)
+    cleaned = _STREAM_BLOCK_PATTERN.sub(b" ", data)
+    chunks = _BINARY_TEXT_CHUNK_PATTERN.findall(cleaned)
     if not chunks:
         return ""
     return "\n".join(

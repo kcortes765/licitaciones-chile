@@ -104,8 +104,8 @@
       "depends_on": [
         4
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 2,
       "max_attempts": 3
     },
     {
@@ -119,8 +119,8 @@
         7,
         8
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     }
   ],

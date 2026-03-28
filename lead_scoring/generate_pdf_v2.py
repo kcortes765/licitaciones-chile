@@ -1188,7 +1188,17 @@ def _build_page_4(pdf, data, tmp_dir):
 
 
 def _build_page_5(pdf, data, tmp_dir):
-    """PAGE 5: Costo de Oportunidad — waterfall + escenarios + market position."""
+    """PAGE 5: Costo de Oportunidad — waterfall + escenarios + callout.
+
+    Layout museo con Y dinamico: ZERO posiciones hardcodeadas.
+    Estructura:
+      1. Section heading
+      2. Waterfall chart full-width (160mm)
+      3. Tabla de escenarios (4 cols, 3 filas)
+      4. Callout gold: valor por punto de WR
+      5. Footer
+    SIN scatter chart — redundante con pagina 2. Menos es mas.
+    """
     company = data.get("company", {})
     industry = data.get("industry", {})
 
@@ -1201,31 +1211,35 @@ def _build_page_5(pdf, data, tmp_dir):
 
     pdf.add_page()
 
-    # --- Section title ---
-    pdf.section_title(4, "Costo de Oportunidad",
-                      "Cuantificacion del potencial de ingresos adicionales")
-    pdf.spacer("sm")
+    # ── Section heading ──
+    pdf.section_heading(4, "Costo de Oportunidad",
+                        "Cuantificacion del potencial de ingresos adicionales")
 
-    # --- Waterfall chart ---
+    pdf.spacer(mm=8)
+
+    # ══════════════════════════════════════════════════════
+    # Waterfall chart full-width (160mm)
+    # ══════════════════════════════════════════════════════
     waterfall_path = str(Path(tmp_dir) / "waterfall.png")
     gen_opportunity_waterfall(data, waterfall_path)
 
-    y_chart = pdf.get_y()
-    pdf.embed_chart(waterfall_path, x=LAYOUT["margin_left"], y=y_chart,
-                    w=LAYOUT["content_w"], h=65,
-                    caption="Escenarios de ingresos adicionales por mejora de Win Rate")
+    pdf.chart_block(waterfall_path,
+                    caption="Escenarios de ingresos adicionales por mejora de Win Rate",
+                    width_mm=160)
 
-    pdf.spacer("xs")
+    pdf.spacer(mm=6)
 
-    # --- Tabla de escenarios ---
-    pdf._set_font("h3")
-    pdf._set_color("navy", "text")
-    pdf.set_x(LAYOUT["margin_left"])
-    pdf.cell(LAYOUT["content_w"], 7, _s("Escenarios de Mejora"), align="L")
-    pdf.spacer("xs")
+    # ══════════════════════════════════════════════════════
+    # Tabla de escenarios: 4 columnas, 3 filas
+    # Limpia, sin bordes verticales. Font 9pt.
+    # ══════════════════════════════════════════════════════
+    pdf._font("h3")
+    pdf._color("navy", "text")
+    pdf.set_xy(pdf.LEFT, pdf._y)
+    pdf.cell(pdf.CONTENT_W, 7, _s("Escenarios de Mejora"), align="L")
+    pdf._y += 7 + pdf.TEXT_GAP
 
     # Calcular escenarios
-    ingreso_actual = total_wins * monto_prom
     scenarios = []
 
     # Escenario 1: +5pp WR
@@ -1233,215 +1247,188 @@ def _build_page_5(pdf, data, tmp_dir):
     wins_5 = total_bids * wr_5
     extra_5 = max(0, wins_5 - total_wins)
     extra_5_clp = extra_5 * monto_prom
-    scenarios.append(("Win Rate + 5pp",
+    scenarios.append(["Win Rate + 5pp",
                       _pct(wr_5),
                       "+{:.0f}".format(extra_5),
-                      _money(extra_5_clp)))
+                      _money(extra_5_clp)])
 
     # Escenario 2: Promedio rubro
     wins_avg = total_bids * avg_wr
     extra_avg = max(0, wins_avg - total_wins)
     extra_avg_clp = extra_avg * monto_prom
-    scenarios.append(("Promedio rubro",
+    scenarios.append(["Promedio rubro",
                       _pct(avg_wr),
                       "+{:.0f}".format(extra_avg),
-                      _money(extra_avg_clp)))
+                      _money(extra_avg_clp)])
 
     # Escenario 3: Top 10%
     wins_top = total_bids * top10_wr
     extra_top = max(0, wins_top - total_wins)
     extra_top_clp = extra_top * monto_prom
-    scenarios.append(("Top 10% del rubro",
+    scenarios.append(["Top 10% del rubro",
                       _pct(top10_wr),
                       "+{:.0f}".format(extra_top),
-                      _money(extra_top_clp)))
+                      _money(extra_top_clp)])
 
     sc_headers = ["Escenario", "Win Rate", "Adjudic. Extra", "Ingresos Adicionales"]
-    sc_rows = [[s[0], s[1], s[2], s[3]] for s in scenarios]
 
-    pdf.comparison_table(sc_headers, sc_rows,
-                         col_widths=[50, 35, 40, 55],
-                         highlight_col=4)
-    pdf.spacer("sm")
+    pdf.data_table(sc_headers, scenarios,
+                   col_widths=[50, 35, 40, 40],
+                   bold_col=3)
 
-    # --- Callout: Cada punto de WR ---
+    pdf.spacer(mm=8)
+
+    # ══════════════════════════════════════════════════════
+    # Callout gold: valor por punto de WR. Bold. 1 linea.
+    # ══════════════════════════════════════════════════════
     if monto_prom > 0 and total_bids > 0:
         valor_por_pp = (total_bids * 0.01) * monto_prom
         callout_text = (
-            "Cada punto porcentual de Win Rate representa aproximadamente {} "
-            "en ingresos adicionales anuales para su empresa, considerando "
-            "su volumen y monto promedio de operacion.".format(_money(valor_por_pp))
+            "Cada punto de Win Rate = {} anuales para su empresa.".format(
+                _money(valor_por_pp))
         )
-        pdf.insight_callout(callout_text, style="success", icon_text="$")
+        pdf.callout(callout_text)
 
-    pdf.spacer("sm")
-
-    # --- Market position scatter ---
-    market_path = str(Path(tmp_dir) / "market_pos_p5.png")
-    gen_market_position(data, market_path)
-
-    y_mkt = pdf.get_y()
-    space_left = LAYOUT["footer_y"] - y_mkt - 15
-    chart_h = min(55, max(40, space_left))
-    if chart_h >= 35:
-        pdf.embed_chart(market_path, x=LAYOUT["margin_left"], y=y_mkt,
-                        w=LAYOUT["content_w"], h=chart_h,
-                        caption="Su empresa en el mapa competitivo: donde esta hoy vs. donde podria estar")
-
-    # --- Footer ---
-    pdf.professional_footer(page_num=5, total_pages=6)
+    # ── Footer ──
+    pdf.footer_block(page_num=5, total_pages=6)
 
 
 def _build_page_6(pdf, data, tmp_dir):
-    """PAGE 6: Recomendaciones, CTA de servicios, firma, disclaimer."""
-    company = data.get("company", {})
-    loss = data.get("loss", {})
-    industry = data.get("industry", {})
+    """PAGE 6: Recomendaciones y Siguiente Paso — recs + pricing + CTA.
 
-    wr = float(company.get("win_rate", 0))
-    total_bids = int(company.get("total_bids", 0))
-    dias = int(company.get("dias_desde_ultima", 0) or 0)
-    avg_wr = float(industry.get("avg_win_rate", INDUSTRY_WR_MEDIAN))
-    n_lp = int(company.get("n_LP", 0) or 0)
-    rival_name = _name(loss.get("top_rival_1_name", ""))
-    rival_count = int(loss.get("top_rival_1_count", 0) or 0)
-    loss_rate = float(loss.get("loss_rate", 0) or 0)
-    region = _s(str(company.get("region", "")) or "")
-
+    Layout museo con Y dinamico: ZERO posiciones hardcodeadas.
+    Estructura:
+      1. Section heading
+      2. 4 recomendaciones: numero bold 11pt + titulo bold 10pt + texto 9pt max 2 lineas
+      3. Divider gold fino
+      4. Pricing: 3 tiers en linea via pricing_cards()
+      5. CTA block navy
+      6. Disclaimer 7pt gris, 2 lineas max
+      7. Footer
+    SIN cajas decorativas en recomendaciones — solo texto limpio con numero.
+    """
     pdf.add_page()
 
-    # --- Section title ---
-    pdf.section_title(4, "Recomendaciones y Siguiente Paso",
-                      "Acciones concretas basadas en los hallazgos del analisis")
-    pdf.spacer("sm")
+    # ── Section heading ──
+    pdf.section_heading(4, "Recomendaciones y Siguiente Paso",
+                        "Acciones concretas basadas en los hallazgos del analisis")
 
-    # --- Recomendaciones especificas basadas en datos ---
+    pdf.spacer(mm=8)
+
+    # ══════════════════════════════════════════════════════
+    # 4 recomendaciones: numero bold 11pt + titulo bold 10pt
+    # + texto 9pt max 2 lineas. Gap 6mm entre cada una.
+    # SIN cajas decorativas — solo texto limpio con numero.
+    # ══════════════════════════════════════════════════════
     recs = _generate_recommendations(data)
 
-    pdf._set_font("h3")
-    pdf._set_color("navy", "text")
-    pdf.set_x(LAYOUT["margin_left"])
-    pdf.cell(LAYOUT["content_w"], 7, _s("Plan de Accion Recomendado"), align="L")
-    pdf.spacer("sm")
+    for i, rec in enumerate(recs[:4], 1):
+        pdf.needs_new_page(18)
 
-    for i, rec in enumerate(recs, 1):
-        y = pdf.get_y()
-        ml = LAYOUT["margin_left"]
-        cw = LAYOUT["content_w"]
+        # Numero bold 11pt
+        pdf.set_font("Helvetica", "B", 11)
+        pdf._color("navy", "text")
+        pdf.set_xy(pdf.LEFT, pdf._y)
+        pdf.cell(8, 6, str(i), align="L")
 
-        # Numero en circulo
-        pdf._set_color("gold", "fill")
-        pdf.ellipse(ml, y, 6, 6, "F")
-        pdf._set_font("caption")
-        pdf._set_color("white", "text")
-        pdf.set_xy(ml, y + 0.5)
-        pdf.cell(6, 5, str(i), align="C")
+        # Titulo bold 10pt
+        pdf.set_font("Helvetica", "B", 10)
+        pdf.set_xy(pdf.LEFT + 8, pdf._y)
+        pdf.cell(pdf.CONTENT_W - 8, 6, _s(rec["title"]), align="L")
+        pdf._y += 7
 
-        # Titulo de la recomendacion
-        pdf._set_font("body_b")
-        pdf._set_color("navy", "text")
-        pdf.set_xy(ml + 8, y)
-        pdf.cell(cw - 8, 5, _s(rec["title"]), align="L")
+        # Texto 9pt, max 2 lineas
+        pdf._font("body")
+        pdf._color("dark_gray", "text")
+        pdf.set_xy(pdf.LEFT + 8, pdf._y)
+        # Truncar detalle a ~2 lineas (~140 chars)
+        detail = _s(rec["detail"])
+        if len(detail) > 140:
+            detail = detail[:137] + "..."
+        pdf.multi_cell(pdf.CONTENT_W - 8, 5, detail, align="L")
+        pdf._y = pdf.get_y() + 6  # gap 6mm entre recomendaciones
 
-        # Detalle
-        pdf._set_font("small")
-        pdf._set_color("text_secondary", "text")
-        pdf.set_xy(ml + 8, y + 6)
-        pdf.multi_cell(cw - 8, 4, _s(rec["detail"]), align="L")
-
-        pdf.spacer("sm")
-
-    pdf.spacer("md")
-
-    # --- CTA: Servicios en pricing tiers ---
-    pdf._set_font("h3")
-    pdf._set_color("navy", "text")
-    pdf.set_x(LAYOUT["margin_left"])
-    pdf.cell(LAYOUT["content_w"], 7, _s("Nuestros Servicios"), align="L")
-    pdf.spacer("sm")
-
-    y_tiers = pdf.get_y()
-    tier_w = LAYOUT["col_third"]
-    gap = LAYOUT["col_gutter"]
-    ml = LAYOUT["margin_left"]
-
-    pdf.pricing_tier(
-        ml, y_tiers, tier_w,
-        "Diagnostico Puntual",
-        "$190.000 + IVA",
-        [
-            "PDF diagnostico 6 pag.",
-            "Analisis de rivales",
-            "Costo de oportunidad",
-            "Recomendaciones",
-        ],
-        highlighted=False,
-    )
-
-    pdf.pricing_tier(
-        ml + tier_w + gap, y_tiers, tier_w,
-        "Analisis Competitivo",
-        "$250.000 + IVA",
-        [
-            "Todo lo anterior +",
-            "Detalle de propuestas rival",
-            "Benchmarking sectorial",
-            "Sesion de estrategia 1h",
-        ],
-        highlighted=True,
-    )
-
-    pdf.pricing_tier(
-        ml + 2 * (tier_w + gap), y_tiers, tier_w,
-        "Monitoreo Mensual",
-        "$490.000 + IVA/mes",
-        [
-            "Todo lo anterior +",
-            "Alertas semanales",
-            "Monitoreo de rivales",
-            "Soporte prioritario",
-        ],
-        highlighted=False,
-    )
-
-    # Ajustar Y despues de los tiers
-    max_tier_features = 4
-    tier_h = 12 + max_tier_features * 5
-    pdf.set_y(y_tiers + tier_h + LAYOUT["sp_lg"])
-
-    # --- Firma ---
+    # ══════════════════════════════════════════════════════
+    # Divider gold fino
+    # ══════════════════════════════════════════════════════
+    pdf.spacer(mm=6)
     pdf.divider("gold")
-    pdf.spacer("sm")
+    pdf.spacer(mm=8)
 
-    pdf.cta_card(
-        "Siguiente Paso",
-        [
-            "Conversemos sobre como estos hallazgos pueden traducirse",
-            "en mas adjudicaciones para su empresa.",
-        ],
-        contact_lines=[
-            "Sebastian Cortes | Ing. Civil UCN",
-            "IngenIA Licitaciones",
-            "contacto@ingenia-licitaciones.cl",
-        ],
+    # ══════════════════════════════════════════════════════
+    # Pricing: 3 tiers en linea via pricing_cards()
+    # Tier central con borde gold (highlight). Max 55mm/card.
+    # ══════════════════════════════════════════════════════
+    tiers = [
+        {
+            "name": "Diagnostico Puntual",
+            "price": "$190.000 + IVA",
+            "features": [
+                "PDF diagnostico 6 pag.",
+                "Analisis de rivales",
+                "Costo de oportunidad",
+            ],
+            "highlighted": False,
+        },
+        {
+            "name": "Analisis Competitivo",
+            "price": "$250.000 + IVA",
+            "features": [
+                "Todo lo anterior +",
+                "Detalle propuestas rival",
+                "Benchmarking sectorial",
+                "Sesion estrategia 1h",
+            ],
+            "highlighted": True,
+        },
+        {
+            "name": "Monitoreo Mensual",
+            "price": "$490.000 + IVA/mes",
+            "features": [
+                "Todo lo anterior +",
+                "Alertas semanales",
+                "Monitoreo de rivales",
+            ],
+            "highlighted": False,
+        },
+    ]
+
+    pdf.pricing_cards(tiers)
+
+    pdf.spacer(mm=10)
+
+    # ══════════════════════════════════════════════════════
+    # CTA block navy: texto centrado 11pt + firma 9pt + email 8pt
+    # ══════════════════════════════════════════════════════
+    pdf.cta_block(
+        text=(
+            "Siguiente Paso\n"
+            "Conversemos sobre como estos hallazgos pueden traducirse\n"
+            "en mas adjudicaciones para su empresa."
+        ),
+        contact=(
+            "Sebastian Cortes | Ing. Civil UCN\n"
+            "IngenIA Licitaciones\n"
+            "contacto@ingenia-licitaciones.cl"
+        ),
     )
 
-    # --- Disclaimer ---
-    pdf.spacer("sm")
-    pdf._set_font("caption")
-    pdf._set_color("text_muted", "text")
-    pdf.set_x(LAYOUT["margin_left"])
+    # ══════════════════════════════════════════════════════
+    # Disclaimer 7pt gris, 2 lineas max
+    # ══════════════════════════════════════════════════════
+    pdf._font("caption")
+    pdf._color("medium_gray", "text")
+    pdf.set_xy(pdf.LEFT, pdf._y)
     disclaimer = (
-        "Este informe es confidencial y fue elaborado exclusivamente para la empresa "
-        "indicada. Los datos provienen de fuentes publicas (Mercado Publico, MOP) y "
-        "el analisis refleja la informacion disponible a la fecha de emision. "
-        "IngenIA Licitaciones no garantiza resultados futuros. "
-        "Prohibida su reproduccion total o parcial sin autorizacion."
+        "Este informe es confidencial. Los datos provienen de fuentes "
+        "publicas (Mercado Publico). IngenIA Licitaciones no garantiza "
+        "resultados futuros. Prohibida su reproduccion sin autorizacion."
     )
-    pdf.multi_cell(LAYOUT["content_w"], 3.5, _s(disclaimer), align="C")
+    pdf.multi_cell(pdf.CONTENT_W, 3.5, _s(disclaimer), align="C")
+    pdf._y = pdf.get_y() + pdf.TEXT_GAP
 
-    # --- Footer ---
-    pdf.professional_footer(page_num=6, total_pages=6)
+    # ── Footer ──
+    pdf.footer_block(page_num=6, total_pages=6)
 
 
 def _generate_recommendations(data):
