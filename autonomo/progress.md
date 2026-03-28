@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 3/20
+## Features completadas: 4/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -92,3 +92,31 @@
 - sys.path se inserta en conftest.py para que `import config`, `import utils` etc. funcionen desde tests/
 - Fixtures reales usan pytest.skip() dentro del fixture (más flexible que skipif en decorador para fixtures)
 - Datos sintéticos modelados con columnas reales verificadas contra los parquets existentes
+
+### Sesión 4 — 2026-03-28 — Feature 4: test_config
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_config.py`: 79 tests exhaustivos para config.py y constantes de pipeline_core.py
+
+**Tests por clase** (79 total):
+1. `TestScoringWeights` (14 tests) — suma=1.0, 9 dimensiones, pesos (0,1), tipos float, parametrizado por dimensión
+2. `TestIdealRanges` (6 tests) — min<max, actividad>=0, win_rate en [0,1], valor_clp positivo, competencia>0, recencia=0
+3. `TestConstants` (12 tests) — RECENCIA_MAX_DAYS>365, REGIONES_TOP sin duplicados, TIPOS_LICITACION L1/LE/LP/LR, BULK_YEARS>=4, ENRICH_TOP_N>0, PLACEHOLDER_SECRET_VALUES, CONSTRUCTION_UNSPSC_PREFIX="72"
+4. `TestPaths` (7 tests) — BASE_DIR/DATA_DIR/RAW_DIR/FILTERED_DIR/OUTPUT_DIR existen, config.py existe
+5. `TestPythonVersion` (7 tests) — PYTHON_BASELINE/TARGET son tuples (3,x), target>=baseline
+6. `TestPythonRuntimeLabel` (3 tests) — formato "major.minor", valor actual, custom version_info
+7. `TestRuntimeSupportStatus` (4 tests) — baseline/target/unverified/default
+8. `TestEnvValueStatus` (8 tests) — missing ("", None, whitespace), placeholder (replace_me, case insensitive, todo), ok (real values)
+9. `TestRedactSecret` (5 tests) — <missing>, <placeholder>, <configured:N chars>, no leak, None
+10. `TestMissingEnvVars` (5 tests) — set vars, unset vars, placeholder vars, empty list, mix
+11. `TestPipelineCoreConstants` (8 tests) — COMBINED_SCORE_WEIGHTS suma=1.0, keys, positivos; CLIENT_FORBIDDEN_COLUMNS no vacío, tiene score_total/combined/cluster/ml_scores
+
+**Verificación**:
+- `python -m pytest tests/test_config.py -v --tb=short` → **79 passed in 0.14s** (PASS)
+
+**Decisiones**:
+- Se incluyeron tests de pipeline_core (COMBINED_SCORE_WEIGHTS, CLIENT_FORBIDDEN_COLUMNS) por ser constantes de configuración relacionadas
+- Se usó `unittest.mock.patch.dict` para tests de env vars sin contaminar el entorno real
+- Tests parametrizados con `@pytest.mark.parametrize` para las 9 dimensiones de scoring
