@@ -174,11 +174,6 @@ def export_whatsapp(df: pd.DataFrame, path):
         for _, row in df.iterrows():
             rank = row.get("rank_ml", row.get("rank", "?"))
             rank = rank if pd.notna(rank) else "?"
-            score = row.get("score_combined")
-            if score is None or (isinstance(score, float) and pd.isna(score)):
-                score = row.get("score_total")
-            if score is None or (isinstance(score, float) and pd.isna(score)):
-                score = 0
             nombre = row.get("nombre")
             if nombre is None or (isinstance(nombre, float) and pd.isna(nombre)):
                 nombre = row.get("rut")
@@ -223,9 +218,16 @@ def main():
     excel_path = OUTPUT_DIR / "leads_final.xlsx"
     export_excel(df, excel_path)
 
-    # Exportar CSV
+    # Exportar CSV (solo columnas cliente-safe, sin scores internos)
     csv_path = OUTPUT_DIR / "leads_final.csv"
-    df.to_csv(csv_path, index=False, encoding="utf-8-sig")
+    csv_safe_cols = [
+        "nombre", "rut", "region", "total_bids", "total_wins", "win_rate",
+        "monto_promedio", "n_LP", "n_LE", "dias_desde_ultima",
+        "competidores_promedio", "tipo_mop", "categoria_mop",
+        "telefono", "email", "web", "contacto_nombre", "direccion",
+    ]
+    csv_cols = [c for c in csv_safe_cols if c in df.columns]
+    df[csv_cols].to_csv(csv_path, index=False, encoding="utf-8-sig")
     print(f"  CSV guardado: {csv_path}")
 
     # Exportar mensajes WhatsApp (top 50 con teléfono o todos los top 50)

@@ -1,9 +1,9 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 12/20
+## Features completadas: 13/20
 ## Última sesión: 2026-03-28
-## Errores encontrados: 3 (corregidos)
+## Errores encontrados: 4 (corregidos)
 
 ---
 
@@ -342,3 +342,24 @@
 - Para tests de calculate_scores se usa head(50-100) para mantener velocidad razonable
 - Tolerancia de 0.5 puntos y ≥99% de filas para recompute tests (consistente con test_data_contracts)
 - 39 tests superan los ~30 del plan gracias a cobertura adicional en ranking y resolve columns
+
+### Sesión 12 — 2026-03-28 — Feature 13: fix_csv_export_leak
+
+**Estado**: COMPLETADA
+
+**Archivos modificados**:
+- `lead_scoring/07_export_output.py`: (1) CSV export ya usaba lista filtrada `csv_safe_cols` (fix aplicado previamente en sesión anterior). (2) Eliminada variable muerta `score` en `export_whatsapp()` — se computaba `score_combined`/`score_total` pero nunca se escribía al archivo.
+
+**Correcciones**:
+1. **CSV export leak** (bug original): `df.to_csv(csv_path, index=False)` exportaba TODAS las columnas incluyendo scores internos. Fix: lista explícita de 18 columnas cliente-safe (`csv_safe_cols`) que excluye `score_total`, `score_combined`, `cluster`, `cluster_perfil`, `xgb_*`, `km_*`, `score_digital`.
+2. **Dead code en export_whatsapp**: Variable `score` (líneas 177-181 originales) computaba score_combined/score_total pero nunca se usaba en el output. Eliminada para evitar confusión y potencial leak futuro.
+
+**Análisis de headers mensajes_whatsapp_v2.txt**:
+- Header actual en código: `--- Lead #{rank} | Won: X Lost: Y | {nombre} ---`
+- El archivo existente (generado Mar 23 con código viejo) tiene `Score: 88.2` en los headers — pero el código actual ya NO incluye Score
+- **Decisión**: Los headers `Lead #{rank}` son ACEPTABLES porque: (1) son para navegación interna del equipo, no se envían al cliente, (2) Won/Lost es data pública de Mercado Público, (3) el rank ayuda al equipo a priorizar outreach, (4) los forbidden patterns no lo flagean por diseño (`rank_position` sí está prohibido, pero `rank` simple en headers internos no)
+
+**Verificación**:
+- `python -c "... bad=[c for c in df.columns if c in CLIENT_FORBIDDEN_COLUMNS]; assert not bad"` → **PASS**
+- `python -m pytest tests/test_export_safety.py -v` → **65 passed in 0.42s** (PASS)
+- CSV contiene solo: nombre, rut, region, total_bids, total_wins, win_rate, monto_promedio, n_LP, n_LE, dias_desde_ultima, competidores_promedio, tipo_mop, categoria_mop, telefono, email, web, contacto_nombre, direccion
