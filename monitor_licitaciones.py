@@ -21,6 +21,7 @@ import urllib.error
 import sys
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 
 # === CONFIGURACION ===
 TICKET = os.getenv("MERCADO_PUBLICO_TICKET", "")
@@ -161,7 +162,7 @@ def detalle_licitacion(codigo):
 
     # Guardar JSON completo
     filename = f"detalle_{codigo.replace('-','_')}.json"
-    filepath = r"C:\Seba\Nueva carpeta (2)\\" + filename
+    filepath = Path(__file__).parent / filename
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(lic, f, indent=2, ensure_ascii=False)
     print(f"\nJSON completo guardado en: {filename}")

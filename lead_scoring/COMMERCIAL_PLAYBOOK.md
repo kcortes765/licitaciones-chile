@@ -30,12 +30,12 @@ No se vende "resumen de bases". Se vende claridad para decidir:
 
 ## Activos comerciales listos
 
-- [Oferta de servicio](C:\Seba\Nueva carpeta (2)\commercial\OFERTA_SERVICIO.md)
-- [NDA simple](C:\Seba\Nueva carpeta (2)\commercial\NDA_SIMPLE.md)
-- [Propuesta base](C:\Seba\Nueva carpeta (2)\commercial\PROPUESTA_BASE.md)
-- [Tarifario](C:\Seba\Nueva carpeta (2)\commercial\TARIFARIO.md)
-- [Secuencia de follow-up](C:\Seba\Nueva carpeta (2)\commercial\FOLLOWUP_SEQUENCE.md)
-- [Plantilla de analisis gratis](C:\Seba\Nueva carpeta (2)\commercial\ANALISIS_GRATIS_TEMPLATE.md)
+- [Oferta de servicio](../commercial/OFERTA_SERVICIO.md)
+- [NDA simple](../commercial/NDA_SIMPLE.md)
+- [Propuesta base](../commercial/PROPUESTA_BASE.md)
+- [Tarifario](../commercial/TARIFARIO.md)
+- [Secuencia de follow-up](../commercial/FOLLOWUP_SEQUENCE.md)
+- [Plantilla de analisis gratis](../commercial/ANALISIS_GRATIS_TEMPLATE.md)
 - diagnostico PDF
 - mensaje WhatsApp personalizado
 

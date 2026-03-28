@@ -15,16 +15,17 @@ Prioridad de insight por lead:
 import pandas as pd
 import urllib.parse
 import re
+from pathlib import Path
 
 # ─── Configuración ────────────────────────────────────────────────────────────
-BASE_DIR    = "C:/Seba/Nueva carpeta (2)/lead_scoring/data"
-VERIFIED_CSV = f"{BASE_DIR}/output/leads_verificados.csv"
-LOSS_PAR     = f"{BASE_DIR}/output/loss_analysis.parquet"
-ENRICHED_PAR = f"{BASE_DIR}/filtered/leads_enriched.parquet"
-COMPANYDB    = f"{BASE_DIR}/filtered/company_database.parquet"
-OUT_CSV      = f"{BASE_DIR}/output/leads_verificados.csv"
-OUT_XLSX     = f"{BASE_DIR}/output/leads_verificados.xlsx"
-OUT_TXT      = f"{BASE_DIR}/output/mensajes_wsp_v3.txt"
+BASE_DIR     = Path(__file__).parent / "lead_scoring" / "data"
+VERIFIED_CSV = BASE_DIR / "output" / "leads_verificados.csv"
+LOSS_PAR     = BASE_DIR / "output" / "loss_analysis.parquet"
+ENRICHED_PAR = BASE_DIR / "filtered" / "leads_enriched.parquet"
+COMPANYDB    = BASE_DIR / "filtered" / "company_database.parquet"
+OUT_CSV      = BASE_DIR / "output" / "leads_verificados.csv"
+OUT_XLSX     = BASE_DIR / "output" / "leads_verificados.xlsx"
+OUT_TXT      = BASE_DIR / "output" / "mensajes_wsp_v3.txt"
 
 FIRMA = "Sebastián Cortés\nIngenIA Licitaciones"
 INDUSTRY_WR_MEDIAN = 0.22   # calculado de empresa activas (total_bids>=5)

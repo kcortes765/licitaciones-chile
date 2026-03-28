@@ -1,16 +1,18 @@
 import pandas as pd
 import re
 import json
+from pathlib import Path
 
 # Cargar parquet
-loss = pd.read_parquet('C:/Seba/Nueva carpeta (2)/lead_scoring/data/output/loss_analysis.parquet')
+BASE_DIR = Path(__file__).parent / "lead_scoring" / "data"
+loss = pd.read_parquet(BASE_DIR / "output" / "loss_analysis.parquet")
 loss['rut_norm'] = loss['rut'].astype(str).apply(lambda r: str(r).strip())
 rut_index = loss.set_index('rut_norm')
 
 INDUSTRY_WR_MEDIAN = 0.22
 
 # Leer archivo de mensajes
-with open('C:/Seba/Nueva carpeta (2)/lead_scoring/data/output/mensajes_wsp_v3.txt', 'r', encoding='utf-8') as f:
+with open(BASE_DIR / "output" / "mensajes_wsp_v3.txt", 'r', encoding='utf-8') as f:
     content = f.read()
 
 lead_blocks = re.split(r'={40,}', content)

@@ -1,0 +1,274 @@
+{
+  "project": "IngenIA Licitaciones",
+  "objective": "Phase A: Auditoría técnica radical con suite de tests comprehensiva + corrección de todos los bugs. Phase B: Mensajes WhatsApp v5 nivel dios optimizados para conversión cold outreach.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "fix_hardcoded_paths",
+      "description": "Corregir todos los paths hardcoded 'C:/Seba/Nueva carpeta (2)/' en 6 archivos Python de la raíz del proyecto. Reemplazar con paths relativos basados en __file__ o importando desde lead_scoring/config.py. Archivos afectados: generar_mensajes_v3.py (línea 20), generar_mensajes_v4.py (línea 28), verificar_mensajes.py (líneas 6, 13), verificar_mensajes_v2.py (líneas 6, 13), filter.py (línea 3), monitor_licitaciones.py (línea 164). También corregir paths en lead_scoring/COMMERCIAL_PLAYBOOK.md (links con C:\\Seba). Usar Path(__file__).parent / 'lead_scoring' / 'data' como base, o pathlib equivalente.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && grep -r 'Seba' *.py lead_scoring/COMMERCIAL_PLAYBOOK.md | grep -v '.git' | wc -l | grep '^0$'",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "create_requirements_txt",
+      "description": "Crear lead_scoring/requirements.txt con todas las dependencias del proyecto (requirements-dev.txt hace -r requirements.txt pero este archivo NO EXISTE). Leer todos los imports de los .py en lead_scoring/ y listar: pandas, numpy, pyarrow, scikit-learn, xgboost, joblib, requests, beautifulsoup4, lxml, openpyxl, matplotlib, seaborn, networkx, scipy, fpdf2, python-dotenv, tqdm, apify-client. Verificar versiones compatibles.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"import pkg_resources; pkg_resources.require(open('requirements.txt').read().splitlines())\" 2>&1 | tail -1",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "test_infrastructure",
+      "description": "Crear la infraestructura de tests: lead_scoring/tests/__init__.py, lead_scoring/tests/conftest.py con fixtures reutilizables. El conftest debe proveer: (1) sample_company_row — pd.Series con todos los campos de company_database, (2) sample_leads_df — DataFrame pequeño con leads rankeados, (3) sample_enriched_df — con campos de contacto, (4) paths a los parquets reales para tests de integración (saltar si no existen con pytest.mark.skipif), (5) clean_text y dirty_text fixtures para tests de seguridad. También crear un pytest.ini o pyproject.toml en lead_scoring/ con configuración básica de pytest (testpaths = tests).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/conftest.py --co -q 2>&1 | head -5",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "test_config",
+      "description": "Crear lead_scoring/tests/test_config.py con ~35 tests exhaustivos para config.py. Incluir: (1) SCORING_WEIGHTS suma exactamente 1.0, (2) todas las 9 dimensiones presentes, (3) cada peso es >0 y <1, (4) IDEAL_RANGES tienen min<max para cada dimensión, (5) actividad min>=0, (6) win_rate rango en [0,1], (7) RECENCIA_MAX_DAYS>365, (8) REGIONES_TOP no vacío y sin duplicados, (9) TIPOS_LICITACION tiene L1/LE/LP/LR, (10) paths BASE_DIR/DATA_DIR/etc existen, (11) BULK_YEARS tiene 4+ años, (12) ENRICH_TOP_N>0, (13) env_value_status: '', 'replace_me', 'real_value', None, (14) redact_secret: missing/placeholder/configured, (15) missing_env_vars con vars seteadas y no seteadas, (16) PLACEHOLDER_SECRET_VALUES no vacío, (17) PYTHON_BASELINE y TARGET son tuples válidos, (18) python_runtime_label format, (19) runtime_support_status para baseline/target/otro, (20) CONSTRUCTION_UNSPSC_PREFIX == '72', (21) COMBINED_SCORE_WEIGHTS (de pipeline_core) suma 1.0, (22) CLIENT_FORBIDDEN_COLUMNS no vacío.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_config.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "test_utils",
+      "description": "Crear lead_scoring/tests/test_utils.py con ~50 tests para utils.py. Incluir: (1) normalizar_rut: '76.543.210-K'→'76543210-K', '76543210K'→'76543210-K', sin guión, con puntos, sin dígito verificador→None, vacío→None, None→None, muy corto→None, K mayúscula/minúscula, (2) extraer_rut_de_id: 'CL-RUT-76543210-K', '76543210-K', 'random-text'→None, vacío→None, (3) tipo_licitacion: 'XXXX-LP26'→'LP', 'XXXX-LE25'→'LE', 'XXXX-L1XX'→'L1', 'XXXX-LR'→'LR', 'algo-random'→'Otro', mayúsculas/minúsculas, (4) is_persona_natural: 'CONSTRUCTORA X LTDA'→False, 'JUAN PEREZ LOPEZ'→True, 'SERVICIOS Y CIA'→False, con acentos, con pipe '|', 5+ palabras→False, vacío→False, NaN→False, (5) formato_clp: 1_500_000_000→'$1.5B', 50_000_000→'$50M', 500_000→'$500,000', 0→'$0', NaN→'$0', None→'$0', (6) safe_get: valor normal, NaN, None, columna que no existe, (7) print_header no crashea.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_utils.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "test_scoring_functions",
+      "description": "Crear lead_scoring/tests/test_scoring.py con ~120 tests exhaustivos para las funciones de scoring en 05_score_leads.py. (A) score_in_range: sin optimal (dentro rango→100, debajo→gradiente, arriba→gradiente, NaN→0, exacto en borde→100, lower_bound None, upper_bound None, div/0 protection), con optimal (pico en optimal→100, bordes→85, fuera→decae, optimal fuera de rango se clipea). (B) Cada scoring function individual: score_actividad (0 bids→near 0, 5→≥85, 10→~100, 15→≥85, 50→<50), score_tamano (MOP mayor 2da cat→100, menor→50, sin MOP con monto→gradiente, sin nada→20), score_win_rate (<2 bids→30, wr=0.25→~100, wr=0→low, wr=0.5→<100, wr=0.8→low), score_recencia (0 días→~100, 365→≥85, 730→<85, 1460→0, NaN→0, 9999→0), score_valor (0→20, $66M→≥85, $500M→~100, $5B→<50, NaN→20), score_competencia (0→30, 5→≥85, 10→~100, 30→<50, NaN→30), score_oportunidad (0 lost 0 rivals→30, high loss high rivals→high, edge: total_bids=0), score_especializacion (100% LP→max, 100% L1→low, mix, 0 total→30), score_region (RM→100, Valparaíso→90, desconocida→40, vacía→50, NaN→50), score_digital (todo→30, nada→70, parcial→50-60). (C) calculate_scores integración: recibe DataFrame, produce score_total 0-100, columnas score_{dim} existen. (D) Todos los scores siempre en [0, 100]. (E) Weights en calculate_scores coinciden con SCORING_WEIGHTS de config.py.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_scoring.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 7,
+      "name": "test_pipeline_core",
+      "description": "Crear lead_scoring/tests/test_pipeline_core.py con ~45 tests para pipeline_core.py. (1) COMBINED_SCORE_WEIGHTS suma 1.0, (2) LEAD_SOURCE_PRIORITY tiene 3 entries en orden correcto, (3) CLIENT_FORBIDDEN_COLUMNS tiene las 8 columnas esperadas, (4) find_best_leads_path: retorna enriched si existe, ml_ranked si no, ranked si no, None si ninguno (usar tmp dirs), (5) load_best_leads_dataframe: FileNotFoundError si no hay nada, (6) recompute_score_total: con todas las 9 columnas score_dim, resultado 0-100, sin columna→ValueError, (7) recompute_score_combined: con km_score+xgb_score usa pesos, sin ML signals usa score_total como baseline, resultado 0-100, sin score_total→ValueError, (8) assign_cluster_profile: 4 categorías (BAJO/REGULAR/BUENO/IDEAL), percentiles correctos (40/70/90/100), (9) assign_rank: ranking secuencial desde 1, ordenado por score desc, (10) resolve_score_column: score_combined>score_total>error, (11) resolve_rank_column: rank_ml>rank>error, (12) build_crm_dataframe: tiene columnas esperadas (empresa, rut, estado, canal), NO tiene columnas prohibidas, rank funciona con rank_ml/rank/ninguno, (13) contact_coverage_summary: conteos correctos, columnas faltantes no crashean, (14) _series_or_default: con/sin columna.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_pipeline_core.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 8,
+      "name": "test_validation",
+      "description": "Crear lead_scoring/tests/test_validation.py con ~60 tests para pipeline_validation.py. (A) PIPELINE_CONTRACTS: cada artifact tiene required/unique/ranges, los 6 artifacts existen (company_database, leads_ranked, leads_ml_ranked, leads_enriched, loss_analysis, matches). (B) validate_dataframe_contract: columnas faltantes detectadas, duplicados detectados, valores fuera de rango detectados, RUT nulos detectados, contrato desconocido→KeyError, DataFrame válido→lista vacía. (C) CLIENT_FORBIDDEN_PATTERNS: 'score_total' matchea, 'score_combined' matchea, 'cluster' matchea, 'xgb_score' matchea, 'km_score' matchea, 'score_digital' NO matchea (excepción en regex), 'nombre' NO matchea, 'rank_position' matchea, 'cluster_perfil' matchea. (D) assert_client_safe_columns: con columnas limpias→OK, con score_total→ValueError, con allowed_columns override. (E) assert_client_safe_text: texto limpio→OK, texto con 'score_total'→ValueError, texto con 'xgb_predicted_wr'→ValueError. (F) assert_client_safe_json: payload limpio→OK, payload con términos→ValueError. (G) assert_client_safe_binary: PDF limpio→OK (mock o real), (H) write_run_manifest: escribe JSON válido con campos esperados, (I) write_validation_report: escribe JSON válido.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_validation.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 9,
+      "name": "test_data_contracts",
+      "description": "Crear lead_scoring/tests/test_data_contracts.py con ~40 tests que verifican los DATOS REALES en los parquets. Cada test usa @pytest.mark.skipif si el archivo no existe. (1) company_database.parquet: tiene columnas requeridas, RUTs únicos, win_rate en [0,1], total_bids>=0, total_wins>=0, total_wins<=total_bids (si no, documentar por qué), monto_promedio>=0 donde no NaN, dias_desde_ultima>=0, n_LP+n_LE+n_L1>=0. (2) leads_ranked.parquet: score_total en [0,100], rank desde 1 secuencial sin huecos, RUTs únicos, tiene score_{dim} para cada una de las 9 dimensiones. (3) leads_ml_ranked.parquet: score_combined en [0,100], rank_ml desde 1, km_score en [0,100], xgb_score en [0,100] donde exista. (4) leads_enriched.parquet: score_digital en [0,100] donde exista, tiene telefono/email/web columnas. (5) loss_analysis.parquet: loss_rate en [0,1], total_participated>=total_won+total_lost (o near), total_lost>=0. (6) Verificar que SCORING_WEIGHTS×score_{dim} produce score_total consistente (recomputar y comparar con tolerance 0.5). (7) Verificar que score_combined se puede recomputar consistentemente.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_data_contracts.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 10,
+      "name": "test_export_safety",
+      "description": "Crear lead_scoring/tests/test_export_safety.py con ~35 tests que verifican que NINGÚN output cliente-facing contiene datos internos. Usar @pytest.mark.skipif si archivos no existen. (1) leads_final.csv: leer con pandas, verificar que NINGUNA columna está en CLIENT_FORBIDDEN_COLUMNS, verificar que no tiene score_total/score_combined/cluster/xgb_*/km_*. (2) leads_final.xlsx: misma verificación. (3) crm_leads.csv y .xlsx: misma verificación + verificar columnas esperadas (empresa, rut, canal, estado). (4) mensajes_whatsapp.txt: leer texto, verificar que no contiene 'score_total', 'score_combined', 'cluster', 'xgb_', 'km_score', 'lead ideal' (case insensitive). (5) mensajes_whatsapp_v2.txt: misma verificación. (6) mensajes_wsp_v3.txt y v4.txt: misma verificación. (7) Cada PDF en diagnosticos/: assert_client_safe_binary. (8) Cada _notas.json en diagnosticos/: assert_client_safe_json. (9) Test parametrizado: para CADA texto/archivo en output/, pasarlo por _scan_text_forbidden y verificar 0 matches. (10) Verificar que leads_verificados.xlsx no tiene columnas prohibidas. (11) Verificar que export_manifest.json, validation_report.json son JSON válidos.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_export_safety.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 11,
+      "name": "test_messages",
+      "description": "Crear lead_scoring/tests/test_messages.py con ~80 tests para generar_mensajes_v4.py y verificar_mensajes_v2.py. Importar funciones de los scripts de la raíz. (A) humanizar: 'CONSTRUCTORA MONTE VIVO LIMITADA'→'Constructora Monte Vivo', 'EMPRESA | Nombre Comercial'→'Nombre Comercial', 'GUERCUT SPA'→'Guercut', None/NaN→str, sin pipe→capitalizado, con E.I.R.L.→removed. (B) limpiar_rival: same logic para rivals, vacío→'', None→''. (C) pct: 0.22→'22%', 0→'0%', 0.155→'16%' (rounding). (D) meses: 180→6, 365→12, 30→1, 0→0. (E) elegir_insight prioridad: crear rows con datos que triggeren cada tipo y verificar que devuelve el tipo correcto. rival_fuerte: rival1_cnt=3, rival1='X'. rival_recurrente: rival1_cnt=2. win_rate_gap_LP: n_LP=5, wr=0.10. lp_alto: n_LP=5, wr=0.25. inactivo: dias=200. wr_bajo_lp: wr=0.15, n_LP=3. loss_concentrado: loss_rate=0.5, total_lost=6. wr_bajo: wr=0.15. rival_unico: rival1='X', total_lost=3. default: todos bajos. (F) Verificar que cada mensaje generado NO contiene términos prohibidos (score, cluster, ML, modelo, pipeline, algoritmo, ranking). (G) generar_wsp_link: teléfono con +56, sin +56, float, formato URL correcto. (H) Si loss_analysis.parquet existe, verificar que para los primeros 10 leads, el insight_tipo es consistente con los datos del parquet.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_messages.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        1,
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 12,
+      "name": "test_integration",
+      "description": "Crear lead_scoring/tests/test_integration.py con ~30 tests de integración end-to-end. (1) Cargar company_database.parquet, correr calculate_scores, verificar score_total en [0,100] para todas las filas. (2) Cargar leads_ranked, recompute_score_total, verificar diferencia <0.5 con score_total original. (3) Si leads_ml_ranked existe, recompute_score_combined, verificar consistencia. (4) Verificar que leads_ranked tiene más filas que leads_enriched (enriched es top N). (5) Verificar pipeline de export: cargar leads, generar CRM DataFrame, verificar no tiene columnas prohibidas. (6) Score flow: company_db → score_total → score_combined → rank — verificar cadena completa. (7) Verificar que score_total en leads_ranked == recalculado desde score_{dim} columns (tolerance 0.5). (8) Verificar que assign_rank produce ranking correcto (mayor score = menor rank number). (9) Pipeline contracts: cada parquet pasa su contrato. (10) Coverage report: contact_coverage_summary produce números sensatos. Todos estos tests usan datos reales con @pytest.mark.skipif.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/test_integration.py -v --tb=short 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 13,
+      "name": "fix_csv_export_leak",
+      "description": "Corregir 07_export_output.py línea 228: df.to_csv exporta TODAS las columnas incluyendo scores internos. Debe filtrar igual que la versión Excel. Crear lista de columnas permitidas para CSV (mismas que excel_cols) y exportar solo esas. Verificar que leads_final.csv resultante no tiene columnas de CLIENT_FORBIDDEN_COLUMNS. También verificar que mensajes_whatsapp_v2.txt generado por 08_loss_analysis.py no incluye score/rank en los headers (los headers 'Lead #rank | Won: X Lost: Y' revelan ranking interno — verificar si esto es acceptable o debe cambiarse).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"import pandas as pd; from pipeline_core import CLIENT_FORBIDDEN_COLUMNS; df=pd.read_csv('data/output/leads_final.csv'); bad=[c for c in df.columns if c in CLIENT_FORBIDDEN_COLUMNS]; assert not bad, f'Columnas prohibidas: {bad}'\" 2>&1 | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 14,
+      "name": "fix_viz_weights",
+      "description": "Revisar 10_visualizations.py y verificar que usa SCORING_WEIGHTS de config.py directamente (no valores hardcoded). Si tiene pesos hardcoded, reemplazar con import de config.py. Verificar que la lista de dimensiones en los gráficos incluye las 9 dimensiones (especialmente score_oportunidad que según RETOMAR.md faltaba). Verificar que los labels de peso en gráficos coinciden con config.py (14% tamano, no 15%).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"exec(open('10_visualizations.py').read().split('def ')[0]); from config import SCORING_WEIGHTS; print('OK: uses config weights')\" 2>&1 | tail -1",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 15,
+      "name": "security_audit",
+      "description": "Auditoría de seguridad completa. (1) Verificar .gitignore cubre: .env, .env.local, .env.bak*, lead_scoring/.env, lead_scoring/.env.bak*, data/raw/, data/filtered/, data/output/. (2) Grep todos los .py por strings que parezcan API keys: 'apify_api', 'AIzaSy', patrones UUID, 'Bearer '. NO debe haber ninguno hardcoded. (3) Verificar que .env.bak.20260306_115223 está cubierto por .gitignore (.env.bak* pattern). (4) Verificar que monitor_licitaciones.py usa os.getenv para TICKET, no hardcoded. (5) Verificar que lead_scoring/config.py usa os.getenv para todas las API keys. (6) Si hay algún archivo con secretos hardcoded, moverlos a .env. (7) Verificar que ningún archivo en output/ (si existiera en git) contiene API keys.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && grep -rn 'apify_api\\|AIzaSy\\|6564B4' --include='*.py' --include='*.md' | grep -v '.env' | grep -v '.git' | grep -v 'autonomo/context.md' | wc -l | grep '^0$'",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 16,
+      "name": "run_tests_fix_bugs",
+      "description": "Ejecutar la suite COMPLETA de tests con: cd lead_scoring && python -m pytest tests/ -v --tb=long. Analizar CADA fallo. Si un test falla, el bug está en el CÓDIGO del pipeline, NO en el test. Investigar la causa raíz, corregir el código del pipeline, y volver a ejecutar. Repetir hasta que todos los tests pasen. Si un test tiene un bug LÓGICO demostrable (ej: compara con valor incorrecto), corregir el test con justificación. Documentar cada fix en progress.md.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/ -v --tb=short 2>&1 | tail -3 | grep 'passed'",
+      "depends_on": [
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 17,
+      "name": "rerun_verify_clean",
+      "description": "Ejecución final de verificación. Correr: (1) python -m pytest tests/ -v — TODOS deben pasar, 0 failures. (2) python validate_outputs.py — debe completar sin error. (3) grep -r 'Seba' *.py — 0 resultados. (4) Generar reporte final en autonomo/phase_a_report.md con: total tests, tests por módulo, bugs encontrados y corregidos, estado de seguridad.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/ -q 2>&1 | tail -1 | grep -E '^[0-9]+ passed' | grep -v 'failed'",
+      "depends_on": [
+        16
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 18,
+      "name": "create_mensajes_v5",
+      "description": "Crear generar_mensajes_v5.py en la raíz del proyecto. Este es el generador de mensajes nivel dios para cold outreach WhatsApp. LEER PRIMERO: autonomo/context.md sección 'Estrategia de cold outreach' para los principios. El v5 debe: (1) Usar paths relativos (Path(__file__).parent), (2) Importar datos de lead_scoring/data/, (3) Mantener los 10 tipos de insight de v4 pero con TEMPLATES COMPLETAMENTE REESCRITOS optimizados para conversión, (4) Estructura: GOLPE (dato impactante) → CONTEXTO (1 línea) → CTA (pregunta abierta), (5) Máximo 5-6 líneas antes de firma, (6) Sin mencionar servicio/precio/diagnóstico, (7) Cada template debe generar curiosidad y urgencia, (8) Personalización: usar nombre de contacto (primer nombre), nombre humanizado de empresa, datos concretos (rival, %, monto), (9) Para rival_fuerte/recurrente: nombrar al rival específico con conteo, (10) Para win_rate_gap: cuantificar en pesos ($) el costo de oportunidad, (11) Para inactivo: mencionar que rivales siguen ganando en su región, (12) NUNCA usar 'estimado/a', 'servicio', 'análisis estratégico', ni jerga de marketing, (13) Tono: como un colega ingeniero que encontró algo interesante, no un vendedor, (14) CTA siempre una pregunta que requiere respuesta sí/no o corta, (15) Output: mensajes_wsp_v5.txt + leads_verificados_v5.xlsx. Verificar que todos los datos en los mensajes coinciden con los parquets.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; assert Path('generar_mensajes_v5.py').exists(); content=Path('generar_mensajes_v5.py').read_text(); assert 'Seba' not in content; assert 'score_total' not in content; assert 'cluster' not in content; print('v5 OK')\"",
+      "depends_on": [
+        1,
+        16
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 19,
+      "name": "verify_v5_messages",
+      "description": "Crear verificar_mensajes_v5.py que verifica los mensajes v5 contra los datos reales. Debe: (1) Leer mensajes_wsp_v5.txt, (2) Para cada lead, parsear el mensaje y extraer datos mencionados (rival, %, conteo, meses), (3) Comparar contra loss_analysis.parquet, (4) Reportar errores si hay discrepancias, (5) Verificar que NINGÚN mensaje contiene términos prohibidos (score, cluster, ML, pipeline, ranking, modelo, algoritmo), (6) Verificar longitud de cada mensaje (max ~500 chars antes de firma), (7) Verificar que cada mensaje tiene CTA con signo de interrogación, (8) Output: verificacion_v5_report.json. Si hay errores de datos, corregir generar_mensajes_v5.py y regenerar.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python verificar_mensajes_v5.py 2>&1 | tail -5 | grep -i 'error\\|ok'",
+      "depends_on": [
+        18
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 20,
+      "name": "final_outputs_commit",
+      "description": "Generar todos los outputs finales y documentar. (1) Asegurar que generar_mensajes_v5.py corrió exitosamente y produjo mensajes_wsp_v5.txt + leads_verificados_v5.xlsx, (2) Verificar todos los outputs con validate_outputs.py, (3) Correr la suite de tests una última vez — todos deben pasar, (4) Crear autonomo/FINAL_REPORT.md con: resumen de Phase A (tests creados, bugs corregidos, estado de seguridad), resumen de Phase B (mensajes generados, distribución de insights, calidad verificada), lista de archivos creados/modificados, instrucciones para enviar los primeros 5 mensajes. (5) Hacer git add de los archivos nuevos/modificados (NO los de data/) y git commit con mensaje descriptivo. NO hacer git push.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && git log --oneline -1 | grep -i 'audit\\|test\\|v5\\|phase'",
+      "depends_on": [
+        17,
+        19
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-03-28T23:30:00",
+  "rules": [
+    "Una feature por sesión — no intentar hacer varias a la vez",
+    "Siempre leer autonomo/context.md y autonomo/progress.md al inicio",
+    "Si un test falla, el bug está en el código del pipeline — corregir el código, NO el test",
+    "Solo modificar un test si tiene un bug lógico demostrable con justificación",
+    "Commitear después de cada feature completada con mensaje descriptivo",
+    "Actualizar progress.md después de cada sesión con: qué se hizo, problemas encontrados, decisiones tomadas",
+    "NUNCA exponer API keys ni secretos en código, tests, ni outputs",
+    "NUNCA incluir columnas prohibidas (score_*, cluster, xgb_*, km_*) en outputs cliente-facing",
+    "Todos los paths deben ser relativos o usar config.py — NUNCA hardcoded absolutos",
+    "Los mensajes WhatsApp v5 deben ser IMPECABLES: datos correctos, tono perfecto, max 5-6 líneas"
+  ]
+}

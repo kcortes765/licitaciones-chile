@@ -1,6 +1,7 @@
 import json
+from pathlib import Path
 
-with open(r"C:\Seba\Nueva carpeta (2)\licitaciones_hoy.json", "r", encoding="utf-8") as f:
+with open(Path(__file__).parent / "licitaciones_hoy.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 print("Total licitaciones hoy:", data["Cantidad"])
