@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 1/20
+## Features completadas: 2/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -29,3 +29,28 @@
 **Decisiones**:
 - Se usó `Path(__file__).parent` en todos los scripts Python (no config.py) para mantener independencia — cada script funciona standalone.
 - Links en COMMERCIAL_PLAYBOOK.md convertidos a paths relativos (`../commercial/...`).
+
+### Sesión 2 — 2026-03-28 — Feature 2: create_requirements_txt
+
+**Estado**: COMPLETADA
+
+**Cambios realizados**:
+- `lead_scoring/requirements.txt`: Actualizado con 18 dependencias con version constraints adecuadas (>=min,<next_major). El archivo existía con versiones incompletas (numpy pinned a <1.25, mayoría sin versión).
+
+**Dependencias incluidas** (18 paquetes):
+- Core: pandas, numpy, pyarrow, python-dotenv
+- Data I/O: openpyxl, lxml
+- HTTP & Scraping: requests, beautifulsoup4, tqdm
+- ML: scikit-learn, xgboost, joblib
+- Viz: matplotlib, seaborn
+- PDF: fpdf2
+- Analysis: scipy, networkx
+- Enrichment: apify-client
+
+**Verificación**:
+- `pkg_resources.require()` contra todas las líneas → sin errores (PASS)
+- `requirements-dev.txt` (-r requirements.txt + pytest) → OK (PASS)
+
+**Decisiones**:
+- Se usaron rangos compatibles (>=installed_major.minor, <next_major) para equilibrar estabilidad y flexibilidad.
+- Todas las dependencias opcionales (xgboost, scipy, networkx, apify-client) incluidas ya que están importadas en el código aunque con try/except — requirements.txt debe garantizar instalación completa.

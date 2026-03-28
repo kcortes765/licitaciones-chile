@@ -29,8 +29,8 @@
       "description": "Crear lead_scoring/requirements.txt con todas las dependencias del proyecto (requirements-dev.txt hace -r requirements.txt pero este archivo NO EXISTE). Leer todos los imports de los .py en lead_scoring/ y listar: pandas, numpy, pyarrow, scikit-learn, xgboost, joblib, requests, beautifulsoup4, lxml, openpyxl, matplotlib, seaborn, networkx, scipy, fpdf2, python-dotenv, tqdm, apify-client. Verificar versiones compatibles.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"import pkg_resources; pkg_resources.require(open('requirements.txt').read().splitlines())\" 2>&1 | tail -1",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
