@@ -1,7 +1,7 @@
 # Progress — Visual Redesign Museo
 
 ## Estado: EN PROGRESO
-## Features completadas: 3/9
+## Features completadas: 6/9
 ## Ultima sesion: 2026-03-28
 
 ---
@@ -54,3 +54,81 @@
 - Verificacion: `from pdf_charts import *` — OK
 - Verificacion: 7/7 charts generan con datos reales — OK
 - Verificacion: 7/7 charts generan con datos vacios (edge cases) — OK
+
+### 2026-03-28 — Feature 4: rewrite_pdf_page1
+- **Status**: DONE
+- Pagina 1 reescrita en `lead_scoring/generate_pdf_v2.py` usando MuseumPDF layout engine
+- Import actualizado: PremiumPDF (alias legacy) → MuseumPDF (canonico)
+- Header bar navy 14mm: nombre empresa 20pt bold left, fecha 9pt right, IngenIA 8pt right, RUT+Region 9pt left. SIN badge
+- SPACER 15mm breathing room post-header
+- Metric row: 5 cards (Licitaciones, Adjudicadas, Win Rate, Monto Total, Rivales) via metric_row()
+- SPACER 10mm (6mm ELEMENT_GAP + 4mm spacer)
+- Resumen Ejecutivo: titulo 14pt bold + body_text 9pt max 5 lineas, line_height=5mm, contenido personalizado con datos reales
+- SPACER 8mm (3mm TEXT_GAP + 5mm spacer)
+- Divider gold fino 0.3pt via divider("gold")
+- SPACER 6mm (4mm divider + 2mm spacer)
+- Tabla de contenido: 4 items numerados, sin circulos, solo numero bold + titulo + descripcion gris
+- Footer via footer_block(page_num=1, total_pages=6)
+- ZERO posiciones Y hardcodeadas post-header — todo via layout engine (_y tracking)
+- Aire intencional: ~47% espacio vertical libre (supera 30% requerido)
+- Verificacion: `python generate_pdf_v2.py 132385-4` → 260 KB, 6 paginas — OK
+
+### 2026-03-28 — Feature 5: rewrite_pdf_page2
+- **Status**: DONE
+- Pagina 2 reescrita en `lead_scoring/generate_pdf_v2.py` usando MuseumPDF layout engine
+- ZERO legacy methods: eliminados section_title, embed_chart, _set_font, _set_color, professional_footer, divider("light"), spacer("sm"/"xs")
+- Usa exclusivamente API museo: section_heading, chart_block, footer_block, _font, _color, spacer(mm=N)
+- Section heading: "1 Desempeno vs. Mercado" con circulo navy + subtitulo gris
+- SPACER 8mm breathing room post-heading
+- ROW 1 — Layout 60/40: gauge chart (w=95mm) LEFT + texto interpretativo RIGHT
+  - "Tasa de Adjudicacion" h3 navy + body text 9pt con interpretacion contextual
+  - Bullets (+) en bold: posicion vs promedio, percentil ranking
+  - pdf._y = max(gauge_bottom, text_bottom) — columnas independientes
+- SPACER 10mm entre rows
+- ROW 2 — Layout 55/45: radar chart (w=85mm) LEFT + perfil competitivo RIGHT
+  - "Perfil Competitivo" h3 navy + body text 9pt
+  - Top 3 fortalezas: "Fortalezas:" label gris + items bold "+" P{n}
+  - Top 1 debilidad: "Oportunidad de mejora:" label gris + item "-" P{n}
+  - pdf._y = max(radar_bottom, text_bottom)
+- SPACER 10mm
+- ROW 3 — Scatter full-width via chart_block(width_mm=160)
+  - Caption centrada 7pt gris: "Posicion relativa: volumen vs. tasa"
+- Footer via footer_block(page_num=2, total_pages=6)
+- ZERO posiciones Y hardcodeadas — todo via layout engine (_y tracking + get_y)
+- Two-column layouts con manual image() + set_xy, max() para sincronizar columnas
+- Verificacion: `python generate_pdf_v2.py 132385-4` → 260 KB, 6 paginas — OK
+- Verificacion: `python generate_pdf_v2.py 121265-9` → 256 KB, 6 paginas — OK
+
+### 2026-03-28 — Feature 6: rewrite_pdf_page3
+- **Status**: DONE
+- Pagina 3 reescrita en `lead_scoring/generate_pdf_v2.py` usando MuseumPDF layout engine
+- ZERO legacy methods: eliminados section_title, embed_chart, _set_font, _set_color, simple_table, insight_callout, comparison_table, professional_footer, spacer("sm"/"xs"), LAYOUT dict refs
+- Usa exclusivamente API museo: section_heading, chart_block, data_table, callout, footer_block, _font, _color, spacer(mm=N), needs_new_page
+- Section heading: "2 Inteligencia Competitiva" con circulo navy + subtitulo gris
+- SPACER 8mm breathing room post-heading
+- Rival bars chart full-width via chart_block(width_mm=160)
+- SPACER 6mm
+- Detalle por rival (max 2): texto limpio 9pt, SIN boxes decorativas
+  - "{RIVAL}: gano N de TOTAL no adjudicadas (X% de las derrotas)."
+- SPACER 8mm
+- Tabla licitaciones perdidas vs rival principal (si cabe):
+  - Logica de espacio: calcula space_available vs tender_table_h
+  - Si no cabe con tabla comparativa, se omite y menciona en texto
+  - 4 columnas: Codigo, Fecha, Monto, Titulo (truncado 40 chars)
+  - Max 5 filas, font 8pt, header navy bold, sin bordes verticales
+  - Caption "Mostrando N de M" si hay mas datos
+- SPACER 8mm
+- Callout hallazgo clave: borde gold 3mm via callout()
+  - count>=3: patron sistematico
+  - count>=1: competidor frecuente
+  - sin rivales: mercado fragmentado
+- SPACER 8mm
+- Tabla comparativa: "Comparacion con el Mercado"
+  - 4 columnas: Metrica, Tu empresa (bold_col=1), Promedio rubro, Top 10%
+  - 4 filas: Win Rate, Licitaciones, Monto prom, Rivales enfrentados
+  - col_widths=[50, 40, 45, 30]
+- Footer via footer_block(page_num=3, total_pages=6)
+- ZERO posiciones Y hardcodeadas — todo via layout engine (_y tracking)
+- Logica de espacio: tabla licitaciones se omite si no cabe junto a tabla comparativa
+- Verificacion: `python generate_pdf_v2.py 132385-4` → 260 KB, 6 paginas — OK
+- Verificacion: `python generate_pdf_v2.py 121265-9` → 255 KB, 6 paginas — OK
