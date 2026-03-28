@@ -1,7 +1,7 @@
 # Progress — Output Layer Modo Dios
 
 ## Estado: EN PROGRESO
-## Features completadas: 7/11
+## Features completadas: 8/11
 ## Ultima sesion: 2026-03-28
 ## Errores encontrados: 0
 
@@ -286,3 +286,56 @@ Reescrito desde cero `GUION-WHATSAPP.md` a nivel consultoria de elite (17,451 ch
 - Todos los mensajes en bloques de codigo copy-paste ready
 
 Archivos modificados: `GUION-WHATSAPP.md`
+
+### Sesion 8 — 2026-03-28
+**Feature 8: alerta_semanal_template** — COMPLETADA
+
+Creado `lead_scoring/generate_weekly_alert.py` — generador de alerta semanal premium para clientes del servicio mensual ($490K/mes):
+
+**Funciones de carga y perfil:**
+- `load_client_profile(rut)`: carga datos del cliente desde parquets (enriched > ml > ranked > company_db), loss analysis (rivales top 3), perfil de filtrado (region, monto, tipos LP/LE/L1)
+- `_get_preferred_types(company)`: determina tipos de licitacion preferidos segun historial
+
+**Funciones de obtencion de licitaciones:**
+- `fetch_recent_tenders(days=7)`: obtiene licitaciones via RSS + API reutilizando `09_tender_matcher.py` (get_rss_tenders + get_api_tenders), dedup por codigo
+- `_extract_tender_amount(tender)`: extrae monto estimado de descripcion/nombre con regex
+- `_extract_tender_type(tender)`: extrae tipo (LP/LE/L1/LR/LQ) del codigo
+
+**Funciones de filtrado y matching:**
+- `filter_tenders_for_client(tenders, profile)`: filtra por region (30pts), tipo (20pts), monto (25pts), construccion (10pts). Umbral minimo 20pts. Retorna top 5
+- `check_rival_activity(tenders, profile)`: verifica si rivales conocidos participan via OCDS API (get_tender_participants_ocds). Limita a 10 llamadas API
+- `_check_rivals_offline(profile)`: alternativa offline usando awards_construction.parquet
+
+**Generacion de recomendaciones:**
+- `generate_recommendations(opportunities, rival_moves, profile)`: genera 1-3 recomendaciones especificas:
+  - Oportunidad prioritaria (si match >= 40)
+  - Alerta de rival (si detectado)
+  - Estrategia selectividad (si WR < 22%) o mantener momentum (si WR >= 22%)
+  - Monitoreo continuo (fallback)
+
+**Generacion de PDF premium:**
+- `generate_weekly_pdf(profile, opportunities, rival_moves, recommendations)`: PDF de 1-2 paginas usando PremiumPDF de pdf_design.py
+  - Header navy con nombre empresa, RUT, semana, fecha
+  - 3 metric cards: Oportunidades, Mov. Rivales, Recomendaciones
+  - Seccion 1: Oportunidades Esta Semana (tabla con codigo, nombre, tipo, cierre, afinidad + callout de top oportunidad)
+  - Seccion 2: Movimiento de Rivales (insight_callout danger por cada rival detectado, o mensaje de sin actividad)
+  - Seccion 3: Recomendacion de la Semana (acciones especificas con detalle)
+  - Footer con proxima entrega + footer profesional con paginacion
+
+**Generacion WhatsApp:**
+- `generate_whatsapp_text(profile, opportunities, rival_moves, recommendations)`: resumen texto plano max 10 lineas con header, oportunidades (codigo/tipo/monto/cierre), rival, recomendacion
+
+**Modos de operacion:**
+- `generate_weekly_alert(rut, days, output_dir)`: modo live (RSS + API real)
+- `generate_weekly_alert_offline(rut, output_dir)`: modo offline (datos historicos de parquets)
+- CLI: `python generate_weekly_alert.py <RUT> [--days 7] [--offline] [--output PATH]`
+
+**Verificacion:**
+- `from generate_weekly_alert import *` OK
+- 0 terminos prohibidos en output cliente (score_total, cluster, km_score, etc. solo en imports internos)
+- Usa pdf_design.py para coherencia visual con diagnostico premium
+- Texto sanitizado con _s() para Latin-1
+- Soporta modo online (API live) y offline (parquets historicos)
+- Output: PDF en data/output/alertas_semanales/ + TXT WhatsApp
+
+Archivos creados: `lead_scoring/generate_weekly_alert.py`
