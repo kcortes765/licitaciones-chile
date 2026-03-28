@@ -1,7 +1,7 @@
 # Progress — Output Layer Modo Dios
 
 ## Estado: EN PROGRESO
-## Features completadas: 8/11
+## Features completadas: 10/11
 ## Ultima sesion: 2026-03-28
 ## Errores encontrados: 0
 
@@ -339,3 +339,96 @@ Creado `lead_scoring/generate_weekly_alert.py` — generador de alerta semanal p
 - Output: PDF en data/output/alertas_semanales/ + TXT WhatsApp
 
 Archivos creados: `lead_scoring/generate_weekly_alert.py`
+
+### Sesion 9 — 2026-03-28
+**Feature 9: mensajes_cold_v6** — COMPLETADA
+
+Creado `generar_mensajes_v6.py` en raiz — generador de mensajes WhatsApp v6 cold outreach premium:
+
+**Diferencias clave vs v5:**
+- Presentacion como ingeniero civil, no como marca ("soy Sebastian, ingeniero civil")
+- Primera persona: "encontre", "vi", "detecte", "revise" (no pasivo)
+- Siempre un numero en $ o % en el golpe (45/45 mensajes verificados)
+- CTA cerrada si/no (no abierta): "Quiere que se lo mande?", "Se lo mando?", etc.
+- Firma: "Sebastian Cortes / Ing. Civil" (no "IngenIA Licitaciones")
+- Para rival_fuerte: cuantifica en pesos (rival_cnt * monto_promedio)
+- Para rival_recurrente: cuantifica en pesos igualmente
+- Para win_rate_gap_LP: calcula gap en pesos vs competencia (opp_cost)
+- Para inactivo: estima licitaciones (~1.190/mes) + monto_promedio como referencia
+- Para rival_unico: cuantifica valor en pesos perdido al rival
+
+**10 tipos de insight (misma prioridad v4/v5):**
+1. rival_fuerte (3+) — con $ cuantificado
+2. rival_recurrente (2) — con $ cuantificado
+3. win_rate_gap_LP (n_LP>=5, WR<20%) — gap en pp + $ oportunidad
+4. lp_alto (n_LP>=5) — WR vs rubro + $ oportunidad si aplica
+5. inactivo (>=180 dias) — conteo licitaciones + $ rango operacion
+6. wr_bajo_lp (WR<20%, LP>=3) — gap en pp
+7. loss_concentrado (loss_rate>=40%, lost>=5) — tasa de perdida %
+8. wr_bajo (WR<19%) — WR% vs rubro
+9. rival_unico (rival, lost>=3) — con $ cuantificado
+10. default — WR% vs rubro
+
+**Estructura de cada mensaje (max 6 lineas + firma):**
+```
+Hola [nombre], soy Sebastian, ingeniero civil.
+
+[GOLPE: dato concreto con $ o %]
+
+[CONTEXTO: 1 frase, primera persona]
+
+[CTA: pregunta cerrada si/no]
+
+Sebastian Cortes
+Ing. Civil
+```
+
+**Distribucion de insights (45 leads):**
+- inactivo: 10 | lp_alto: 9 | rival_recurrente: 7 | win_rate_gap_LP: 7
+- rival_unico: 5 | default: 3 | rival_fuerte: 2 | wr_bajo: 1 | wr_bajo_lp: 1
+
+**Seguridad:**
+- 0 terminos prohibidos (score, ranking, pipeline, algoritmo, modelo, ML, servicio, diagnostico, plataforma, herramienta)
+- Check de "servicio" con word boundary para evitar falsos positivos en nombres de empresa ("Servicios Integrales...")
+- Sin score_total ni cluster en el codigo fuente (verificacion del plan: OK)
+- 45/45 mensajes con $ o % en el golpe
+- 45/45 mensajes con CTA con signo de interrogacion
+- Todos los mensajes con "ingeniero civil" en saludo
+
+**Output:**
+- `lead_scoring/data/output/mensajes_wsp_v6.txt` (45 mensajes con links wa.me)
+- `lead_scoring/data/output/leads_verificados_v6.xlsx` (3 hojas: WhatsApp Listos, Resumen Insights, Otros Leads)
+
+Archivos creados: `generar_mensajes_v6.py`, `lead_scoring/data/output/mensajes_wsp_v6.txt`, `lead_scoring/data/output/leads_verificados_v6.xlsx`
+
+### Sesion 10 — 2026-03-28
+**Feature 10: verify_v6_messages** — COMPLETADA
+
+Ejecutado `generar_mensajes_v6.py` para generar los 45 mensajes y creado `verificar_mensajes_v6.py` adaptado de v5 con verificaciones ampliadas:
+
+**Verificaciones realizadas (6 checks):**
+1. **Datos vs parquet**: cada dato mencionado (rival, conteo, WR%, LP, perdidas, meses, montos) cruzado contra loss_analysis.parquet — 0 errores
+2. **Terminos prohibidos**: lista ampliada vs v5 (score, cluster, ML, pipeline, ranking, modelo, algoritmo, servicio, diagnostico, analisis, IA, plataforma, herramienta) — 0 encontrados
+3. **Longitud**: max 500 chars antes de firma — 0 excedidos
+4. **CTA**: cada mensaje tiene signo de interrogacion — 45/45 OK
+5. **Numero concreto**: cada mensaje tiene al menos 1 numero ($, %, o conteo) — 45/45 OK (check NUEVO v6)
+6. **Header metadata**: WR%, LP, Perdidas, Dias en header vs parquet — 0 discrepancias
+
+**Verificacion por tipo de insight:**
+- rival_fuerte (2): rival name + count + total_lost + monto rival (tolerancia 20%)
+- rival_recurrente (7): rival name + count + monto rival
+- win_rate_gap_LP (7): n_LP + WR% + gap pp + opp_cost
+- lp_alto (9): n_LP + WR% + total_lost + gap pp (si aplica) + opp_cost (si aplica)
+- inactivo (10): meses + tender count estimate (tolerancia 200)
+- wr_bajo_lp (1): n_LP + WR% + gap pp
+- wr_bajo (1): total_wins + total_bids + WR%
+- rival_unico (5): total_lost + rival name + monto rival
+- default (3): total_wins + total_bids + WR%
+
+**Resultado: 45/45 OK, 0 errores, 0 terminos prohibidos, 0 advertencias**
+
+**Verificacion del plan:**
+- `verificacion_v6_report.json` generado con total_con_errores_datos=0, total_forbidden_issues=0
+- Comando de verificacion del plan: PASS
+
+Archivos creados: `verificar_mensajes_v6.py`, `verificacion_v6_report.json`

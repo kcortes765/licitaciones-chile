@@ -110,8 +110,8 @@
       "description": "Crear generar_mensajes_v6.py en raíz. Los mensajes v5 son correctos en datos pero el copy no refleja un producto premium. V6 debe: (1) Mantener los 10 tipos de insight y la misma lógica de prioridad, (2) REESCRIBIR TODOS los templates con tono de colega ingeniero senior que encontró algo interesante — no vendedor, no consultor genérico, (3) Cada mensaje debe tener EXACTAMENTE esta estructura: Línea 1: 'Hola [nombre], soy Sebastián, ingeniero civil.' Línea 2-3: EL GOLPE — dato concreto con números que cause la reacción '¿cómo sabe esto?' Línea 4: Contexto de 1 frase que explica por qué importa. Línea 5: CTA pregunta cerrada (sí/no). Firma: 2 líneas. TOTAL: max 6 líneas + firma. (4) Diferencias clave vs v5: Presentarse como ingeniero (no como 'IngenIA Licitaciones'), usar 'encontré/vi/detecté' (primera persona), incluir siempre un número en pesos o porcentaje en el golpe, CTA debe ser pregunta que se responde con sí/no (no abierta). (5) Para rival_fuerte: cuantificar en pesos cuánto dejaron en manos del rival. Para win_rate_gap: calcular contratos perdidos por año al WR actual vs rubro. Para inactivo: mencionar cuántas licitaciones salieron en su región mientras estaban inactivos (si tenemos el dato, sino estimar). (6) Output: mensajes_wsp_v6.txt + leads_verificados_v6.xlsx. (7) NUNCA mencionar: servicio, diagnóstico, análisis, IA, plataforma, herramienta.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; assert Path('generar_mensajes_v6.py').exists(); c=Path('generar_mensajes_v6.py').read_text(encoding='utf-8'); assert 'score_total' not in c; assert 'cluster' not in c; print('v6 OK')\"",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -122,8 +122,8 @@
       "depends_on": [
         9
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
