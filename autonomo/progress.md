@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 14/20
+## Features completadas: 15/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 5 (corregidos)
 
@@ -390,3 +390,25 @@
 - `grep score_digital 10_visualizations.py` → **0 matches** (eliminado)
 - `grep "15%\|7%\|5%" 10_visualizations.py` → **0 matches** (pesos hardcoded eliminados)
 - WEIGHT_LABELS generado: actividad=20%, tamano=14%, win_rate=12%, recencia=12%, valor=12%, competencia=10%, oportunidad=10%, especializacion=6%, region=4%
+
+### Sesión 15 — 2026-03-28 — Feature 15: security_audit
+
+**Estado**: COMPLETADA
+
+**Auditoría realizada**:
+1. **.gitignore**: Verificado que cubre `.env`, `.env.local`, `.env.bak*`, `lead_scoring/.env`, `lead_scoring/.env.bak*`, `data/raw/`, `data/filtered/`, `data/output/`, `backups/` — **PASS**
+2. **API keys hardcoded**: Grep exhaustivo de patrones sensibles (tokens Apify, Google API keys, tickets MercadoPúblico, Bearer tokens) en todos los .py y .md — **0 secretos encontrados**
+3. **config.py**: Las 3 API keys (`APIFY_TOKEN`, `MERCADO_PUBLICO_TICKET`, `GOOGLE_MAPS_API_KEY`) usan `os.getenv()` — **PASS**
+4. **monitor_licitaciones.py**: `TICKET = os.getenv("MERCADO_PUBLICO_TICKET", "")` — **PASS**
+5. **.env.example**: Solo contiene `replace_me` como placeholder — **PASS**
+6. **Archivos en git**: Ningún archivo de data/output/, data/filtered/, data/raw/, ni .env real está tracked — **PASS**
+7. **Framework de protección de secretos**: `redact_secret()`, `env_value_status()`, `assert_env_vars()` funcionan correctamente — **PASS**
+
+**Correcciones**:
+- `lead_scoring/tests/test_config.py:315`: Valor de test `"apify_api_AbCdEf1234567890"` cambiado a `"real_token_AbCdEf1234567890"` — contenía patrón de token Apify que disparaba grep de seguridad (falso positivo, pero mejor eliminarlo)
+
+**Archivos creados**:
+- `audit/security_audit_report.md`: Reporte completo de auditoría de seguridad
+
+**Verificación**:
+- `grep -rn` de patrones sensibles en *.py y *.md (excluyendo .env y .git) → **0 matches** (PASS)

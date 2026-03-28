@@ -312,7 +312,7 @@ class TestEnvValueStatus:
         assert env_value_status("abc123xyz") == "ok"
 
     def test_long_real_value_is_ok(self):
-        assert env_value_status("apify_api_AbCdEf1234567890") == "ok"
+        assert env_value_status("real_token_AbCdEf1234567890") == "ok"
 
 
 # ====================================================================

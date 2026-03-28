@@ -180,8 +180,8 @@
       "description": "Auditoría de seguridad completa. (1) Verificar .gitignore cubre: .env, .env.local, .env.bak*, lead_scoring/.env, lead_scoring/.env.bak*, data/raw/, data/filtered/, data/output/. (2) Grep todos los .py por strings que parezcan API keys: 'apify_api', 'AIzaSy', patrones UUID, 'Bearer '. NO debe haber ninguno hardcoded. (3) Verificar que .env.bak.20260306_115223 está cubierto por .gitignore (.env.bak* pattern). (4) Verificar que monitor_licitaciones.py usa os.getenv para TICKET, no hardcoded. (5) Verificar que lead_scoring/config.py usa os.getenv para todas las API keys. (6) Si hay algún archivo con secretos hardcoded, moverlos a .env. (7) Verificar que ningún archivo en output/ (si existiera en git) contiene API keys.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && grep -rn 'apify_api\\|AIzaSy\\|6564B4' --include='*.py' --include='*.md' | grep -v '.env' | grep -v '.git' | grep -v 'autonomo/context.md' | wc -l | grep '^0$'",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
