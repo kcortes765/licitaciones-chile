@@ -1,0 +1,159 @@
+{
+  "project": "IngenIA Licitaciones — Output Layer Modo Dios",
+  "objective": "Rehacer desde cero TODO el material que toca al cliente: PDF diagnóstico premium, mensajes cold v6, templates comerciales, follow-up, alertas semanales. Cada touchpoint del funnel debe justificar $250K-$490K y sentirse consultoría de élite.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "design_system",
+      "description": "Crear lead_scoring/pdf_design.py con el sistema de diseño premium. Esto NO es el PDF, es la capa de estilos reutilizable. Incluir: (1) Paleta de colores premium — navy profundo, azul corporativo, acentos dorado/cobrizo para highlights, grises elegantes para texto secundario. NO usar colores primarios planos. (2) Funciones para crear componentes visuales reutilizables en fpdf2: header_bar, section_title, metric_card (número grande + label + subtexto), insight_callout (caja con borde izquierdo grueso + icono textual), comparison_table (2 columnas: Tu empresa vs Mercado con colores), footer profesional. (3) Constantes tipográficas: tamaños para H1/H2/H3/body/caption/metric. (4) Layout grid: margins, column widths, spacing. El objetivo es que cualquier página del PDF se construya componiendo estos bloques. Estilo referencia: reportes de McKinsey/Bain — limpio, data-heavy, con jerarquía visual clara. NO es un informe académico, es un documento ejecutivo que un gerente de constructora mire 2 minutos y diga 'estos tipos saben lo que hacen'.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_design import *; print('Design system OK')\"",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "pdf_charts_premium",
+      "description": "Crear lead_scoring/pdf_charts.py con funciones de gráficos nivel premium que reemplazan los actuales. Cada chart debe ser publicación-ready. (1) gen_win_rate_gauge: gauge/semicircle chart mostrando WR de la empresa con zonas de color (rojo<15%, amarillo 15-25%, verde >25%) y marker. NO usar barplot simple. (2) gen_radar_premium: radar chart con 8 ejes, relleno semi-transparente, línea de percentil 50% como referencia, labels legibles, sin overlap. (3) gen_competitor_bars: barras horizontales de rivales con degradado rojo→naranja, nombre a la izquierda, conteo y % a la derecha. Agregar mini-barra gris de contexto (total licitaciones). (4) gen_timeline: línea temporal de participaciones (x=fecha, y=monto, color=ganó/perdió). Mostrar tendencia. NUEVO gráfico que el PDF actual no tiene. (5) gen_market_position: scatter plot de WR vs total_bids, con la empresa destacada como punto grande, y el promedio marcado. Muestra dónde está vs el mercado. (6) gen_opportunity_waterfall: waterfall chart mostrando ingresos actuales → gap vs promedio → gap vs top10% → potencial total. NO usar barh simple. (7) gen_tipo_donut: donut chart (no barras) de distribución LP/LE/L1 con % en el centro. Todos los charts: DPI 200, fondo blanco, sin bordes innecesarios, tipografía consistente con pdf_design.py. Usar la paleta de pdf_design.py.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_charts import *; print('Charts module OK')\"",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "pdf_generator_v2_pages_1_3",
+      "description": "Crear lead_scoring/generate_pdf_v2.py con las primeras 3 páginas del PDF diagnóstico premium. REESCRIBIR DESDE CERO usando pdf_design.py y pdf_charts.py. (PAGE 1 — PORTADA): Header navy full-width con nombre empresa grande, RUT, región, fecha. Debajo: 5 metric cards en fila (Licitaciones, Adjudicadas, Win Rate, Monto Total Op., Rivales Únicos). Debajo: Resumen ejecutivo de 4-5 líneas PERSONALIZADO con datos reales (no genérico). Mencionar hallazgo principal (rival dominante, brecha WR, o inactividad según el caso). Tabla de contenido del informe (4 secciones). (PAGE 2 — DESEMPEÑO vs MERCADO): Título de sección. Win rate gauge chart + texto interpretativo. Radar chart 8 dimensiones. Histograma de posición en mercado. Texto: percentil exacto, comparación con promedio y top 10%. Cada dato con interpretación de 1 línea (no solo números). (PAGE 3 — INTELIGENCIA COMPETITIVA): Competitor bars chart. Para cada rival top (hasta 3): nombre, veces que ganó, % de las derrotas que representa. NUEVO: tabla detallada de licitaciones perdidas vs rival principal — código licitación, fecha, monto, tipo (si la data está en los parquets). Hallazgo clave en callout box prominente. Resumen comparativo table. Importar data de load_data() del script actual (reutilizar la función de carga).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from generate_pdf_v2 import *; print('PDF v2 pages 1-3 OK')\"",
+      "depends_on": [
+        1,
+        2
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "pdf_generator_v2_pages_4_6",
+      "description": "Agregar páginas 4-6 a generate_pdf_v2.py. (PAGE 4 — ANÁLISIS TEMPORAL Y SECTORIAL): Timeline chart de participaciones a lo largo del tiempo (ganó/perdió). Donut chart de distribución por tipo. Texto: cuándo fue su mejor período, tendencia reciente (mejorando/empeorando), dónde se concentra su actividad. Presencia regional con mapa mental (lista de regiones con actividad). Rango de montos con comparación vs rubro. (PAGE 5 — COSTO DE OPORTUNIDAD): Waterfall chart de oportunidad. Escenarios: actual → +5pp WR → promedio rubro → top 10%. Para cada escenario: adjudicaciones extra estimadas y monto en CLP. Callout prominente: 'Cada punto de Win Rate = $XMM anuales para su empresa'. Market position scatter (dónde está vs dónde podría estar). (PAGE 6 — RECOMENDACIONES Y SIGUIENTE PASO): 4-5 recomendaciones ESPECÍFICAS basadas en los datos del lead (no genéricas como 'seleccionar mejor'). Ej: si tiene rival dominante, recomendar análisis de propuestas de ese rival. Si está inactivo, recomendar monitoreo de oportunidades en su región. CTA: oferta de servicios en card premium (diagnóstico $190K, competitivo $250K, mensual $490K). Firma: Sebastián Cortés + contacto. Disclaimer legal al pie. Agregar función main() que genera PDF para un RUT dado desde CLI. Verificar client-safe (sin scores internos).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python generate_pdf_v2.py 132385-4 --dry-run 2>&1 | tail -5",
+      "depends_on": [
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "generate_test_pdfs",
+      "description": "Generar PDFs de prueba con generate_pdf_v2.py para las 4 empresas que ya tienen diagnósticos (132385-4 GUERCUT, 121265-9 Synel, 105243-8 Mecvalves, 137981-3). Guardar en data/output/diagnosticos_v2/. Verificar: (1) PDFs se generan sin error, (2) Tienen 6 páginas, (3) Pasan assert_client_safe_binary, (4) Tamaño > 200KB (indica gráficos incluidos). Si alguno falla, debuggear y corregir el generador. Comparar visualmente que los charts se renderizan correctamente (verificar que los archivos PNG temporales se crean).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pathlib import Path; pdfs = list(Path('data/output/diagnosticos_v2').glob('*.pdf')); assert len(pdfs) >= 3, f'Solo {len(pdfs)} PDFs'; assert all(p.stat().st_size > 200000 for p in pdfs), 'PDFs muy pequeños'; print(f'{len(pdfs)} PDFs generados OK')\"",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "commercial_templates_premium",
+      "description": "Reescribir TODOS los documentos comerciales en commercial/ a nivel premium. Cada documento debe sonar como consultoría de ingeniería de alto nivel, no como freelancer. (1) OFERTA_SERVICIO.md: Reescribir completo. Estructura: Problema (3 pain points específicos del sector construcción), Solución (qué hacemos, con datos — 'analizamos 1.8M licitaciones históricas'), Metodología (pipeline: dato → análisis → insight → acción), 3 tiers con detalle de entregables por tier, Equipo (Sebastián Cortés, Ing. Civil UCN — no más 'responsable comercial'), Casos de uso reales (mencionar tipos de insights descubiertos sin revelar clientes). (2) PROPUESTA_BASE.md: Reescribir como propuesta formal. Resumen ejecutivo con placeholders inteligentes [EMPRESA], alcance detallado por tier, entregables con formatos especificados, metodología en 4 pasos, SLA (tiempos de respuesta), exclusiones claras, pricing, condiciones de pago, aceptación. (3) TARIFARIO.md: Agregar tabla comparativa de tiers con checkmarks de qué incluye cada uno. (4) FOLLOWUP_SEQUENCE.md: 5 touchpoints (D0 WhatsApp, D2 email, D5 follow, D10 cierre, D30 reactivación) con copy EXACTO listo para copiar-pegar, cada uno personalizable con [EMPRESA], [HALLAZGO], [NOMBRE]. (5) ANALISIS_GRATIS_TEMPLATE.md: Reescribir con estructura de mini-diagnóstico que WOW al prospecto — no 'Dato 1: [HECHO]' sino estructura narrativa con hallazgo → implicancia → pregunta. (6) NDA_SIMPLE.md: Mantener pero profesionalizar formato.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; files=['OFERTA_SERVICIO.md','PROPUESTA_BASE.md','TARIFARIO.md','FOLLOWUP_SEQUENCE.md','ANALISIS_GRATIS_TEMPLATE.md','NDA_SIMPLE.md']; sizes=[Path(f'commercial/{f}').stat().st_size for f in files]; assert all(s > 500 for s in sizes), 'Archivos muy cortos'; print(f'6 templates OK, avg size {sum(sizes)//len(sizes)} bytes')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 7,
+      "name": "guion_whatsapp_v2",
+      "description": "Reescribir GUION-WHATSAPP.md completo. El guión actual tiene buen flujo pero el copy es genérico. Reescribir cada paso con copy premium que refleje que detrás hay un producto de $250K, no un pitch genérico. (PASO 1): Ya viene del generador de mensajes — no tocar. (PASO 2 — responden): 3 casos (interés, curioso, corto) con copy que demuestre dominio del sector. Mencionar datos específicos del lead por chat. Usar lenguaje de ingeniero, no de vendedor. (PASO 3 — demo): Mini-análisis por chat: 6-8 bullets con ESTRUCTURA FIJA que siempre siga: Licitación [CODIGO] | Monto: $X | Tipo: LP | Adjudicó: [RIVAL] con [diferenciador]. Criterio clave: [qué definió]. Oportunidad: [qué mejorar]. Esto debe parecer un preview del PDF premium, no un resumen genérico. (PASO 4 — cierre): Pricing reveal natural, sin presión. Describir exactamente qué reciben (PDF de 6 páginas con radar, rivales, costo de oportunidad, recomendaciones). (PASO 5 — entrega): Copy para enviar PDF + 3 bullets de resumen. (PASO 6 — upsell): Transición natural a mensual. OBJECIONES: Reescribir las 6 objeciones con respuestas más sofisticadas que demuestren conocimiento del sector. FOLLOW-UP: 4 touchpoints con copy exacto. Formato: cada mensaje en bloque de código listo para copiar-pegar.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"text=open('GUION-WHATSAPP.md',encoding='utf-8').read(); assert len(text) > 5000, 'Guion muy corto'; assert 'PASO 2' in text; assert 'PASO 6' in text; print('Guion v2 OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 8,
+      "name": "alerta_semanal_template",
+      "description": "Crear lead_scoring/generate_weekly_alert.py — generador de alerta semanal para clientes del servicio mensual ($490K). Esto NO EXISTE todavía y es clave para el servicio mensual. El script debe: (1) Leer licitaciones recientes de RSS/API (reutilizar lógica de 12_monitor_api.py), (2) Filtrar por perfil del cliente (región, tipo, monto), (3) Generar un reporte semanal en formato Markdown → PDF que contenga: Header con nombre empresa + semana, Sección 'Oportunidades Esta Semana' (3-5 licitaciones filtradas con código, monto, cierre, match score), Sección 'Movimiento de Rivales' (si algún rival conocido participó/ganó esta semana), Sección 'Recomendación' (cuáles perseguir y por qué), Footer con próxima entrega. (4) También generar versión texto plano para enviar por WhatsApp (resumen de 10 líneas max). El formato debe ser coherente con el PDF diagnóstico premium (mismos colores, misma tipografía). Esto es lo que justifica los $490K/mes — el cliente recibe esto CADA SEMANA.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from generate_weekly_alert import *; print('Weekly alert module OK')\"",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 9,
+      "name": "mensajes_cold_v6",
+      "description": "Crear generar_mensajes_v6.py en raíz. Los mensajes v5 son correctos en datos pero el copy no refleja un producto premium. V6 debe: (1) Mantener los 10 tipos de insight y la misma lógica de prioridad, (2) REESCRIBIR TODOS los templates con tono de colega ingeniero senior que encontró algo interesante — no vendedor, no consultor genérico, (3) Cada mensaje debe tener EXACTAMENTE esta estructura: Línea 1: 'Hola [nombre], soy Sebastián, ingeniero civil.' Línea 2-3: EL GOLPE — dato concreto con números que cause la reacción '¿cómo sabe esto?' Línea 4: Contexto de 1 frase que explica por qué importa. Línea 5: CTA pregunta cerrada (sí/no). Firma: 2 líneas. TOTAL: max 6 líneas + firma. (4) Diferencias clave vs v5: Presentarse como ingeniero (no como 'IngenIA Licitaciones'), usar 'encontré/vi/detecté' (primera persona), incluir siempre un número en pesos o porcentaje en el golpe, CTA debe ser pregunta que se responde con sí/no (no abierta). (5) Para rival_fuerte: cuantificar en pesos cuánto dejaron en manos del rival. Para win_rate_gap: calcular contratos perdidos por año al WR actual vs rubro. Para inactivo: mencionar cuántas licitaciones salieron en su región mientras estaban inactivos (si tenemos el dato, sino estimar). (6) Output: mensajes_wsp_v6.txt + leads_verificados_v6.xlsx. (7) NUNCA mencionar: servicio, diagnóstico, análisis, IA, plataforma, herramienta.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; assert Path('generar_mensajes_v6.py').exists(); c=Path('generar_mensajes_v6.py').read_text(encoding='utf-8'); assert 'score_total' not in c; assert 'cluster' not in c; print('v6 OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 10,
+      "name": "verify_v6_messages",
+      "description": "Ejecutar generar_mensajes_v6.py para generar los 45 mensajes. Luego verificar con verificar_mensajes_v5.py adaptado (o crear verificar_mensajes_v6.py si es necesario): (1) Datos en mensajes coinciden con parquets, (2) 0 términos prohibidos, (3) Longitud max 500 chars antes de firma, (4) Cada mensaje tiene CTA con '?', (5) Ningún mensaje menciona 'servicio', 'diagnóstico', 'análisis', 'IA', 'plataforma'. (6) NUEVO check: cada mensaje tiene al menos 1 número concreto ($, %, o conteo). Output: verificacion_v6_report.json con 0 errores.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"import json; r=json.load(open('verificacion_v6_report.json',encoding='utf-8')); assert r['total_con_errores_datos']==0; assert r['total_forbidden_issues']==0; print(f'v6: {r[\"total_ok\"]}/{r[\"total_leads\"]} OK')\"",
+      "depends_on": [
+        9
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 11,
+      "name": "integration_test_all",
+      "description": "Test de integración completo de todo el output layer nuevo. (1) Generar PDF v2 para GUERCUT (132385-4) — verificar 6 páginas, >200KB, client-safe. (2) Generar mensajes v6 — verificar 45/45 OK. (3) Verificar que GUION-WHATSAPP.md tiene los 6 pasos. (4) Verificar que los 6 commercial templates existen y son sustanciales (>1KB cada uno). (5) Verificar que generate_weekly_alert.py importa sin error. (6) Correr test suite existente (864 tests) — no debe haberse roto nada. (7) Crear autonomo/FINAL_REPORT_V2.md con resumen de todo lo creado/modificado, instrucciones de uso, y checklist de lanzamiento comercial. (8) Git commit de todo.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -m pytest tests/ -q --tb=no 2>&1 | tail -1 | grep 'passed'",
+      "depends_on": [
+        5,
+        6,
+        7,
+        8,
+        10
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-03-28T03:30:00",
+  "rules": [
+    "Cada feature es REESCRITURA DESDE CERO — no parchar lo existente",
+    "Tono: consultoría de ingeniería de élite, no freelancer ni startup",
+    "El PDF debe parecer de McKinsey/Bain — limpio, data-heavy, ejecutivo",
+    "Los mensajes deben sonar como colega ingeniero, no vendedor",
+    "NUNCA mencionar: score, cluster, ML, pipeline, algoritmo, ranking interno",
+    "NUNCA usar lenguaje genérico — cada texto debe tener datos específicos del lead",
+    "fpdf2 tiene limitación Latin-1 — usar _s() para sanitizar texto siempre",
+    "Gráficos: matplotlib con estilo premium, DPI 200, paleta consistente",
+    "Leer autonomo/context.md para entender datos disponibles y restricciones",
+    "Si un gráfico no se puede hacer bien con matplotlib, hacerlo simple pero elegante en vez de feo y complejo"
+  ]
+}
