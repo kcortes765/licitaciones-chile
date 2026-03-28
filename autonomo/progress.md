@@ -1,7 +1,7 @@
 # Progress — IngenIA Licitaciones Audit + Messages v5
 
 ## Estado: EN PROGRESO
-## Features completadas: 5/20
+## Features completadas: 6/20
 ## Última sesión: 2026-03-28
 ## Errores encontrados: 0
 
@@ -143,3 +143,37 @@
 **Decisiones**:
 - Test `test_false_no_es_none` usa `==` en vez de `is` porque pandas Series retorna `numpy.bool_` que no es el singleton Python `False` — bug lógico corregido en test
 - Cobertura supera los ~50 tests del plan (87 total) para cubrir todos los edge cases relevantes
+
+### Sesión 6 — 2026-03-28 — Feature 6: test_scoring_functions
+
+**Estado**: COMPLETADA
+
+**Archivos creados**:
+- `lead_scoring/tests/test_scoring.py`: 202 tests exhaustivos para 05_score_leads.py
+
+**Tests por clase** (202 total):
+1. `TestScoreInRangeNoOptimal` (14 tests) — inside/edges/below/above gradient, NaN/None→0, lower/upper_bound=None, negative clipped, zero-width range
+2. `TestScoreInRangeWithOptimal` (27 tests incl. parametrized) — optimal→100, edges→85, midway gradient, below/above decay, clipped optimal, div/0, non-negative sweep, max-100 sweep
+3. `TestScoreActividad` (8 tests) — 0→0, 1→low, 5→≥85, 10→mid, 15→100, 25→mid, 50→0, NaN→0
+4. `TestScoreTamano` (14 tests) — MOP mayor 2da/segunda→100, 3ra/tercera→80, 1ra/primera→60, unknown→70, menor→50, monto in range, optimal 500M, adjudicado fallback, no data→20, NaN→20, case insensitive
+5. `TestScoreWinRate` (9 tests) — <2 bids→30, optimal 0.25→100, wr=0→0, 0.5→<85, 0.8→0, 0.15→≥85, 0.35→≥85, NaN→0
+6. `TestScoreRecencia` (8 tests) — 0→100, 100→>90, 365→≥85, 730→<85, 1460→0, 9999→0, NaN→0, missing col→0
+7. `TestScoreValor` (7 tests) — 0→20, NaN→20, 66M→≥85, 500M→100, 5B→0, 200M→mid, 1M→0
+8. `TestScoreCompetencia` (7 tests) — 0→30, NaN→30, 5→≥85, 10→100, 30→0, 7→mid, 1→0 (at lower_bound)
+9. `TestScoreOportunidad` (8 tests) — no data→30, high→100, moderate→50, zero bids→safe, NaN lost/rivals, only rivals→25, capped 100
+10. `TestScoreEspecializacion` (7 tests) — all LP→100, all L1→20, all LE→70, mix→85, zero→30, NaN→30, capped 100
+11. `TestScoreRegion` (11 tests) — RM→100, Valparaíso→90, Biobío→80, Araucanía→70, Los Lagos→60, other→40, empty→50, NaN→50, None→50, partial match, case insensitive
+12. `TestScoreDigital` (11 tests) — web+email→30, web→50, email→50, phone→60, nothing→70, gm_web/ocds_email/gm_telefono, combinations, missing fields→70
+13. `TestCalculateScores` (9 tests) — produces score_total, range [0,100], all dim columns, weighted sum verification, preserves columns, row count, single row, dims match config
+14. `TestAllScoresBounded` (55 parametrized tests) — sweep de valores extremos para 8 funciones
+15. `TestWeightsConsistency` (6 tests) — sum=1.0, 9 dims, scorer functions exist, ideal ranges consistent, recencia max, regiones top
+
+**Verificación**:
+- `python -m pytest tests/test_scoring.py -v --tb=short` → **202 passed in 0.44s** (PASS)
+
+**Decisiones**:
+- Se usó `import_module("05_score_leads")` por el nombre de archivo numérico que no es importable directo
+- Helpers `_row()` y `_drow()` para crear datos de test rápidamente con defaults razonables
+- Tests paramétricos en `TestAllScoresBounded` barren valores extremos y NaN para cada scoring function
+- Se corrigió expectativa de `test_1_at_lower_bound` (competencia): lower_bound=1 da score=0, no >0
+- Cobertura 202 tests supera los ~120 del plan gracias a parametrización exhaustiva
