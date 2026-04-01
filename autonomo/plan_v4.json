@@ -1,0 +1,135 @@
+{
+  "project": "IngenIA Licitaciones — PDF Rebuild + Strategic Messaging",
+  "objective": "DOS TRACKS PARALELOS: (A) Reescribir el generador de PDF desde CERO por CUARTA vez — esta vez con enfoque de coordenadas matemáticamente verificables, cada elemento con posición calculada y validada. (B) Estudio estratégico completo de cold messaging y reescritura de mensajes basada en análisis profundo.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "pdf_mathematical_layout",
+      "description": "Crear lead_scoring/pdf_engine.py — un motor de layout MATEMÁTICAMENTE CORRECTO para fpdf2. El problema fundamental de las iteraciones anteriores es que los elementos se posicionan sin verificar que caben. Este motor resuelve eso. DISEÑO: (1) Clase PageLayout con: page_width=210, page_height=297 (A4mm), margin_top=20, margin_bottom=20, margin_left=20, margin_right=15, content_width=175, content_height=257. (2) Método add_element(height_mm, render_fn) que: calcula si cabe en la página actual (current_y + height + margin_bottom <= page_height), si no cabe hace new_page(), llama render_fn(pdf, x=margin_left, y=current_y, w=content_width, h=height_mm), actualiza current_y += height_mm + gap. (3) Método add_columns(col_specs) para layouts de 2 columnas: recibe lista de (width_ratio, render_fn, height_mm), renderiza lado a lado, avanza Y al max height de las columnas. (4) Constantes de altura PRE-CALCULADAS para cada componente: HEADER_H=40, METRIC_ROW_H=30, SECTION_HEADING_H=15, BODY_LINE_H=5, TABLE_ROW_H=7, CHART_H=65 (default), CALLOUT_H=20, SPACER_SM=4, SPACER_MD=8, SPACER_LG=12, FOOTER_H=10. (5) Función validate_page(elements_with_heights) que suma alturas y verifica que caben ANTES de renderizar. Si no caben, lanza error con detalle de qué sobra. (6) NO USAR fpdf2 auto_page_break — manejarlo manualmente con lógica determinista. Incluir test: crear un PDF de prueba con 20 elementos y verificar que ninguno se sale de la página.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_engine import PageLayout; l=PageLayout(); print(f'Content area: {l.content_width}x{l.content_height}mm'); assert l.content_width > 150; assert l.content_height > 240; print('Engine OK')\"",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "pdf_components_clean",
+      "description": "Crear lead_scoring/pdf_components.py — componentes visuales que reciben (pdf, x, y, w, h) y renderizan EXACTAMENTE en ese espacio. Cada componente es una función pura que NO modifica estado global. COMPONENTES: (1) render_header(pdf,x,y,w,h, empresa, rut, region, fecha): barra navy h=40mm, empresa 18pt bold left, fecha 8pt right, RUT+region 8pt segunda línea. (2) render_metrics(pdf,x,y,w,h, metrics_list): 5 cards en fila, cada una w/5-gap, número 24pt center, label 7pt center debajo. Border-top navy 1pt. (3) render_section_heading(pdf,x,y,w,h, num, title, subtitle): número 12pt en círculo navy, título 13pt bold, subtítulo 8pt gris. Altura fija 15mm. (4) render_body(pdf,x,y,w,h, text, font_size=9): texto multi_cell dentro del box (x,y,w,h). Respeta boundaries. Si texto no cabe, trunca con '...'. (5) render_chart(pdf,x,y,w,h, img_path, caption): imagen centrada horizontalmente con caption 7pt debajo. Imagen escalada para caber en w×(h-8mm). (6) render_table(pdf,x,y,w,h, headers, rows, col_widths, bold_col): tabla con header navy, filas alternas gris claro, sin bordes verticales. Rows truncadas si no caben en h. (7) render_callout(pdf,x,y,w,h, text, color): borde izquierdo 2mm del color, texto 9pt dentro. (8) render_pricing_row(pdf,x,y,w,h, tiers): 3 cards side-by-side, title+price+bullets cada una. (9) render_cta(pdf,x,y,w,h, text, contact): card navy con texto blanco centrado. (10) render_footer(pdf, page_num, total): línea fina + 3 textos al pie. CADA componente debe tener docstring con su altura esperada. PRUEBA: generar un PDF de 1 página con header+metrics+body+table y verificar que nada se solapa.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pdf_components import *; print('Components OK')\"",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "pdf_charts_v3",
+      "description": "Reescribir lead_scoring/pdf_charts.py por TERCERA vez. Esta vez el ÚNICO objetivo es: charts limpios que renderizan correctamente al tamaño especificado. PRINCIPIOS: (1) Cada función recibe figsize_inches como parámetro (NO hardcoded). El caller calcula figsize basado en el espacio disponible en mm: figsize=(w_mm/25.4, h_mm/25.4). (2) ZERO text overlap — si un label no cabe, abreviarlo o quitarlo. (3) Font sizes PEQUEÑOS (7-9pt max para labels, 12pt max para valores destacados). (4) Solo 3 colores: navy=#1B2A4A, gold=#B8860B, gray=#AAAAAA. (5) DPI 200 siempre. (6) FUNCIONES: gauge_chart(wr, avg_wr, path, figsize) — semicírculo simple, SIN texto grande superpuesto. Solo la aguja y los % en los extremos. radar_chart(data_dict, path, figsize) — 8 ejes, labels de 1 palabra max (abreviar), font 6pt. competitor_chart(rivals, path, figsize) — barh simples, navy, nombre left, count right. scatter_chart(company_x, company_y, all_x, all_y, path, figsize) — puntos grises, empresa navy grande. donut_chart(data, path, figsize) — máximo 3 slices, total en centro. waterfall_chart(scenarios, path, figsize) — barras verticales con labels arriba. (7) CADA función debe poder generar un PNG standalone para testing: `python pdf_charts.py` genera los 6 charts de prueba en /tmp/ con datos dummy.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python pdf_charts.py 2>&1 | tail -3",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "pdf_builder_page_by_page",
+      "description": "Crear lead_scoring/build_diagnostic_pdf.py — el generador final. USA pdf_engine.py (layout), pdf_components.py (render), pdf_charts.py (gráficos). Reutiliza load_data() de generate_pdf_v2.py para cargar datos. CADA PÁGINA se construye como lista de (height_mm, render_function). El layout engine las posiciona. Si algo no cabe, se omite (nunca se corta). PÁGINA 1 (Portada): [header(40), spacer(12), metrics(30), spacer(10), body_resumen(35), spacer(8), table_contenido(40), footer(10)] = TOTAL ~185mm de 257 disponibles (72mm de aire). PÁGINA 2 (Desempeño): [section_heading(15), spacer(8), columns([gauge(60%,65), texto(40%,65)]), spacer(10), columns([radar(55%,70), texto(45%,70)]), spacer(8), footer(10)] = ~186mm. PÁGINA 3 (Competitiva): [section_heading(15), spacer(8), chart_rivales(full,45), spacer(6), body_rival_detail(20), spacer(6), table_licitaciones(50), spacer(6), callout(18), spacer(6), table_comparativa(40), footer(10)] = ~230mm (tight pero cabe). Si table_licitaciones + table_comparativa no caben juntas, omitir table_licitaciones. PÁGINA 4 (Temporal): [section_heading(15), spacer(8), columns([donut(45%,65), texto(55%,65)]), spacer(10), body_regional(20), spacer(6), body_escala(15), footer(10)] = ~214mm. Sin timeline si no hay datos. PÁGINA 5 (Oportunidad): [section_heading(15), spacer(8), chart_waterfall(full,70), spacer(8), table_escenarios(35), spacer(8), callout_costo(18), footer(10)] = ~172mm. PÁGINA 6 (Recomendaciones): [section_heading(15), spacer(8), body_recs(80), spacer(10), pricing_row(55), spacer(8), cta(35), spacer(4), body_disclaimer(10), footer(10)] = ~235mm. VERIFICAR: para cada página, sum(heights) < 257mm. Si no, reducir spacers o componentes.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | tail -5",
+      "depends_on": [
+        1,
+        2,
+        3
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "generate_all_pdfs_verify",
+      "description": "Generar los 4 PDFs con build_diagnostic_pdf.py y verificar EXHAUSTIVAMENTE. (1) Generar: 132385-4, 121265-9, 105243-8, 137981-3. (2) Verificar cada uno: existe, >100KB, 6 páginas (contar con PyPDF2 o similar), pasa assert_client_safe_binary. (3) Verificar MATEMÁTICAMENTE que ningún elemento se sale: para cada página, la suma de alturas de elementos + spacers <= content_height (257mm). Imprimir el breakdown de alturas por página. (4) Si algún PDF falla, corregir build_diagnostic_pdf.py y regenerar. (5) Guardar en data/output/diagnosticos_v3/ (NO sobreescribir v2). (6) 865 tests deben seguir pasando. (7) Git commit.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pathlib import Path; pdfs=list(Path('data/output/diagnosticos_v3').glob('*.pdf')); assert len(pdfs)>=3, f'{len(pdfs)} PDFs'; print(f'{len(pdfs)} PDFs v3 OK')\"",
+      "depends_on": [
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "messaging_strategic_study",
+      "description": "Crear autonomo/MESSAGING_STRATEGY.md — estudio estratégico COMPLETO de cold messaging para constructoras chilenas. Este NO es un template, es un análisis de la psicología del comprador y la estrategia detrás de cada mensaje. CONTENIDO: (1) PERFIL DEL RECEPTOR: Quién lee estos mensajes? Gerente general o comercial de constructora mediana (10-50 personas). Contexto: revisa WhatsApp entre reuniones, tiene 30 segundos max. Dolor: sabe que pierde licitaciones pero no tiene visibilidad de por qué. Defensas: desconfía de vendedores, recibe spam, ignora mensajes genéricos. QUÉ LO HARÍA RESPONDER: algo que demuestre que YA sabes algo específico de SU empresa que él NO sabía. (2) ANÁLISIS POR TIPO DE INSIGHT (los 10 tipos): Para cada uno: qué dato tenemos, por qué es relevante para el receptor, cuál es la emoción que genera (curiosidad, urgencia, miedo, orgullo), cuál es el gancho psicológico, ejemplo de golpe perfecto vs golpe mediocre. (3) PRINCIPIOS DE COPYWRITING PARA CHILE B2B: Tono usted (formal pero cercano), evitar anglicismos, cuantificar siempre en pesos chilenos, referencias a Mercado Público (que el receptor conoce), credibilidad vía título (Ing. Civil), NO mencionar IA/tecnología/plataforma (genera desconfianza en construcción). (4) ESTRUCTURA ÓPTIMA DEL MENSAJE: Línea 1: quién soy (credibilidad), Línea 2-3: el golpe (dato), Línea 4: por qué importa (contexto), Línea 5: CTA (pregunta sí/no). (5) ANTI-PATRONES: qué NO hacer (hablar de uno mismo, ofrecer servicios, usar jerga de marketing, mensajes largos, múltiples CTA). (6) MÉTRICAS DE ÉXITO: tasa de respuesta esperada (5-15% en cold B2B Chile), qué medir, cuándo ajustar.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"t=open('autonomo/MESSAGING_STRATEGY.md',encoding='utf-8').read(); assert len(t)>5000; print(f'Strategy doc: {len(t)} chars OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 7,
+      "name": "mensajes_v7_strategic",
+      "description": "Crear generar_mensajes_v7.py basado en autonomo/MESSAGING_STRATEGY.md. LEER LA ESTRATEGIA PRIMERO. Cada template debe ser el resultado del análisis estratégico, no una iteración del v6. CAMBIOS vs v6: (1) PRESENTACIÓN: 'Hola [nombre], soy Sebastián Cortés, ingeniero civil.' — NO 'de IngenIA Licitaciones' (suena a empresa genérica). (2) RIVAL_FUERTE: cuantificar en PESOS lo que dejaron en manos del rival. Ej: '{Rival} les ganó {N} licitaciones por un total de ${X}M. Hay un patrón identificable en cómo arma las propuestas.' (3) RIVAL_RECURRENTE: similar pero con tono de 'patrón emergente'. (4) WIN_RATE_GAP_LP: convertir la brecha en CONTRATOS PERDIDOS POR AÑO. Ej: 'Con {N} postulaciones LP y tasa de {X}%, están dejando ~{Y} contratos al año en otras manos — unos ${Z}M.' (5) LP_ALTO: si WR>=rubro, ángulo de 'proteger ventaja'. Si WR<rubro, ángulo de 'cerrar brecha'. (6) INACTIVO: urgencia — 'Llevan {M} meses sin postular. En ese período salieron {N} licitaciones en su región que sus rivales directos están ganando.' Usar dato real de n_tenders_region si está disponible, sino estimar. (7) WR_BAJO: cuantificar brecha en pesos anuales. (8) LOSS_CONCENTRADO: 'De {N} licitaciones, {M} no se adjudicaron. Hay un factor común — y no es precio.' (9) DEFAULT: stats honestos + comparación con rubro. (10) CTA: siempre pregunta CERRADA (sí/no): '¿Quiere verlo?' / '¿Le mando el detalle?' / '¿Le interesa?' — máximo 4 palabras. (11) FIRMA: 'Sebastián Cortés' + nueva línea + 'Ing. Civil — Inteligencia de Licitaciones'. NO 'IngenIA Licitaciones'. (12) LARGO TOTAL: máximo 5 líneas + firma. Si no cabe en 5 líneas, el mensaje es muy largo — cortar. (13) Usar _safe_float/_safe_int/_safe_str para manejar NaN (fix del bug anterior). (14) formato_monto() para pesos chilenos ($447M, $1.2B). (15) Output: mensajes_wsp_v7.txt + leads_verificados_v7.xlsx. (16) Verificar 45/45 con verificar_mensajes adaptado.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"from pathlib import Path; assert Path('generar_mensajes_v7.py').exists(); c=Path('generar_mensajes_v7.py').read_text(encoding='utf-8'); assert 'score_total' not in c; assert 'cluster' not in c; print('v7 OK')\"",
+      "depends_on": [
+        6
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 8,
+      "name": "verify_v7_final",
+      "description": "Ejecutar generar_mensajes_v7.py y verificar EXHAUSTIVAMENTE. (1) Generar 45 mensajes. (2) Verificar cada uno contra parquets: datos correctos, rival correcto, % correcto, montos correctos. (3) Verificar 0 términos prohibidos (score, cluster, ML, pipeline, ranking, modelo, algoritmo, plataforma, herramienta, servicio, diagnóstico, análisis). (4) Verificar largo: max 500 chars antes de firma. (5) Verificar CTA: tiene '?' y es max 5 palabras. (6) Verificar que cada mensaje tiene al menos 1 número en pesos ($) o porcentaje. (7) Verificar que NINGÚN mensaje dice 'IngenIA Licitaciones' (solo 'Inteligencia de Licitaciones' en firma). (8) Output: verificacion_v7_report.json. (9) Si hay errores, corregir generar_mensajes_v7.py y re-generar. (10) Correr 865 tests — todos pasan. (11) Git commit todo.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"import json; r=json.load(open('verificacion_v7_report.json',encoding='utf-8')); assert r['total_con_errores_datos']==0; assert r['total_forbidden_issues']==0; print(f'v7: {r[\"total_ok\"]}/{r[\"total_leads\"]} OK')\"",
+      "depends_on": [
+        7
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 9,
+      "name": "final_integration",
+      "description": "Test de integración final de TODO. (1) PDFs v3: 4 generados, >100KB, 6 páginas, client-safe. (2) Mensajes v7: 45/45 verificados, 0 errores. (3) 865 tests pasando. (4) Crear autonomo/SESSION_REPORT.md con: resumen de todo lo hecho en esta sesión (3 /lanzar anteriores + auditoría Codex + este /lanzar), total de bugs corregidos (17+), archivos creados/modificados, estado final del proyecto, siguiente paso comercial. (5) Git commit final.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -m pytest tests/ -q --tb=no 2>&1 | tail -1 | grep 'passed'",
+      "depends_on": [
+        5,
+        8
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-04-01T12:00:00",
+  "rules": [
+    "PDF: CADA ELEMENTO tiene posición y tamaño CALCULADO. Suma de alturas por página <= 257mm.",
+    "PDF: Si algo no cabe, se OMITE. NUNCA se deja cortado o solapado.",
+    "PDF: Solo 3 colores: navy #1B2A4A, gold #B8860B, gray #AAAAAA. Nada más.",
+    "PDF: Charts reciben figsize del caller basado en espacio disponible. NUNCA hardcoded.",
+    "MENSAJES: Leer MESSAGING_STRATEGY.md antes de escribir templates.",
+    "MENSAJES: Max 5 líneas + firma. Si no cabe, el mensaje es muy largo.",
+    "MENSAJES: Presentarse como ingeniero, no como empresa.",
+    "MENSAJES: Cuantificar SIEMPRE en pesos chilenos o porcentaje.",
+    "MENSAJES: CTA = pregunta cerrada de max 4 palabras.",
+    "NaN: usar _safe_float/_safe_int/_safe_str, NUNCA 'x or 0' con pandas."
+  ]
+}
