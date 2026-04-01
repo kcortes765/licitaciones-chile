@@ -1,7 +1,7 @@
 # Progress — PDF Rebuild + Strategic Messaging
 
 ## Estado: EN PROGRESO
-## Features completadas: 1/9
+## Features completadas: 2/9
 ## Ultima sesion: 2026-04-01
 
 ---
@@ -23,3 +23,21 @@
 - **Test**: PDF de prueba con 20 elementos, 4 paginas generadas, 0 overflow
 - **Validacion 6 paginas tipicas**: todas caben (max 223mm de 247mm disponibles)
 - **Verificacion plan**: `content_width=175 > 150, content_height=257 > 240` — OK
+
+### Feature 2: pdf_components_clean — DONE
+- **Archivo**: `lead_scoring/pdf_components.py`
+- **Que hace**: 10 componentes visuales puros que renderizan EXACTAMENTE en (x, y, w, h).
+- **Componentes**:
+  - `render_header` — barra navy, empresa 18pt, RUT+region, subtitulo (40mm)
+  - `render_metrics` — 5 cards en fila, numero 20pt, label 7pt, border-top navy (30mm)
+  - `render_section_heading` — circulo navy con numero, titulo 13pt, subtitulo 8pt (15mm)
+  - `render_body` — texto multi_cell con truncado automatico y word-wrap (variable)
+  - `render_chart` — imagen centrada + caption 7pt debajo (65mm default)
+  - `render_table` — header navy, filas alternas, sin bordes verticales (variable)
+  - `render_callout` — borde izquierdo 2mm color + texto 9pt (20mm)
+  - `render_pricing_row` — 3 cards side-by-side con title/price/bullets (55mm)
+  - `render_cta` — card navy, texto gold 12pt, contacto blanco (35mm)
+  - `render_footer` — linea + marca/confidencial/pagina (10mm)
+- **Helpers**: `_safe_str` (NaN-safe), `_truncate` (boundary-safe), `_latin1_safe` (encoding-safe)
+- **Test**: PDF 2 paginas (P1: 183mm, P2: 218mm), ambas < 257mm, 0 overflow
+- **Verificacion plan**: `from pdf_components import *` — OK
