@@ -41,8 +41,8 @@
       "description": "Reescribir lead_scoring/pdf_charts.py por TERCERA vez. Esta vez el ÚNICO objetivo es: charts limpios que renderizan correctamente al tamaño especificado. PRINCIPIOS: (1) Cada función recibe figsize_inches como parámetro (NO hardcoded). El caller calcula figsize basado en el espacio disponible en mm: figsize=(w_mm/25.4, h_mm/25.4). (2) ZERO text overlap — si un label no cabe, abreviarlo o quitarlo. (3) Font sizes PEQUEÑOS (7-9pt max para labels, 12pt max para valores destacados). (4) Solo 3 colores: navy=#1B2A4A, gold=#B8860B, gray=#AAAAAA. (5) DPI 200 siempre. (6) FUNCIONES: gauge_chart(wr, avg_wr, path, figsize) — semicírculo simple, SIN texto grande superpuesto. Solo la aguja y los % en los extremos. radar_chart(data_dict, path, figsize) — 8 ejes, labels de 1 palabra max (abreviar), font 6pt. competitor_chart(rivals, path, figsize) — barh simples, navy, nombre left, count right. scatter_chart(company_x, company_y, all_x, all_y, path, figsize) — puntos grises, empresa navy grande. donut_chart(data, path, figsize) — máximo 3 slices, total en centro. waterfall_chart(scenarios, path, figsize) — barras verticales con labels arriba. (7) CADA función debe poder generar un PNG standalone para testing: `python pdf_charts.py` genera los 6 charts de prueba en /tmp/ con datos dummy.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python pdf_charts.py 2>&1 | tail -3",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -55,8 +55,8 @@
         2,
         3
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -67,8 +67,8 @@
       "depends_on": [
         4
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
@@ -77,8 +77,8 @@
       "description": "Crear autonomo/MESSAGING_STRATEGY.md — estudio estratégico COMPLETO de cold messaging para constructoras chilenas. Este NO es un template, es un análisis de la psicología del comprador y la estrategia detrás de cada mensaje. CONTENIDO: (1) PERFIL DEL RECEPTOR: Quién lee estos mensajes? Gerente general o comercial de constructora mediana (10-50 personas). Contexto: revisa WhatsApp entre reuniones, tiene 30 segundos max. Dolor: sabe que pierde licitaciones pero no tiene visibilidad de por qué. Defensas: desconfía de vendedores, recibe spam, ignora mensajes genéricos. QUÉ LO HARÍA RESPONDER: algo que demuestre que YA sabes algo específico de SU empresa que él NO sabía. (2) ANÁLISIS POR TIPO DE INSIGHT (los 10 tipos): Para cada uno: qué dato tenemos, por qué es relevante para el receptor, cuál es la emoción que genera (curiosidad, urgencia, miedo, orgullo), cuál es el gancho psicológico, ejemplo de golpe perfecto vs golpe mediocre. (3) PRINCIPIOS DE COPYWRITING PARA CHILE B2B: Tono usted (formal pero cercano), evitar anglicismos, cuantificar siempre en pesos chilenos, referencias a Mercado Público (que el receptor conoce), credibilidad vía título (Ing. Civil), NO mencionar IA/tecnología/plataforma (genera desconfianza en construcción). (4) ESTRUCTURA ÓPTIMA DEL MENSAJE: Línea 1: quién soy (credibilidad), Línea 2-3: el golpe (dato), Línea 4: por qué importa (contexto), Línea 5: CTA (pregunta sí/no). (5) ANTI-PATRONES: qué NO hacer (hablar de uno mismo, ofrecer servicios, usar jerga de marketing, mensajes largos, múltiples CTA). (6) MÉTRICAS DE ÉXITO: tasa de respuesta esperada (5-15% en cold B2B Chile), qué medir, cuándo ajustar.",
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones && python -c \"t=open('autonomo/MESSAGING_STRATEGY.md',encoding='utf-8').read(); assert len(t)>5000; print(f'Strategy doc: {len(t)} chars OK')\"",
       "depends_on": [],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 1,
       "max_attempts": 3
     },
     {
