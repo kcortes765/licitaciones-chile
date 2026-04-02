@@ -31,8 +31,8 @@
       "depends_on": [
         1
       ],
-      "status": "pending",
-      "attempts": 0,
+      "status": "done",
+      "attempts": 3,
       "max_attempts": 3
     },
     {

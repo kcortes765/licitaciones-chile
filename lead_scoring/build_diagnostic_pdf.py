@@ -8,13 +8,14 @@ Cada pagina es una lista de (height_mm, render_fn).
 El layout engine las posiciona. Si algo no cabe, se omite.
 NUNCA se corta ni se solapa.
 
-6 paginas:
+7 paginas (con tender_details):
   P1: Portada — header + metricas + resumen ejecutivo + indice
-  P2: Desempeno vs Mercado — gauge + radar en columnas
-  P3: Inteligencia Competitiva — rivales, tabla detalle, hallazgo
-  P4: Analisis Temporal — donut + regional + escala
-  P5: Costo de Oportunidad — waterfall + escenarios
-  P6: Recomendaciones — plan accion + pricing + CTA
+  P2: Historial de Licitaciones — tabla detallada, color-coded (NUEVA)
+  P3: Desempeno vs Mercado — gauge + radar en columnas
+  P4: Inteligencia Competitiva — rivales, tabla detalle, hallazgo
+  P5: Analisis Temporal — donut + regional + escala
+  P6: Costo de Oportunidad — waterfall + escenarios
+  P7: Recomendaciones — plan accion + pricing + CTA
 
 Uso:
     python build_diagnostic_pdf.py 132385-4
@@ -39,6 +40,7 @@ from pdf_engine import (
     CHART_H, CALLOUT_H, FOOTER_H, PRICING_ROW_H, CTA_H,
     SPACER_SM, SPACER_MD, SPACER_LG,
     COLOR_NAVY, COLOR_GOLD, COLOR_GRAY,
+    COLOR_WHITE, COLOR_DARK_GRAY, COLOR_MID_GRAY, COLOR_LIGHT_GRAY,
 )
 from pdf_components import (
     render_header, render_metrics, render_section_heading,
@@ -434,16 +436,28 @@ def _build_page_1(layout, data, tmp_dir):
 
     layout.add_spacer(SPACER_MD)  # 8mm
 
-    # Table of contents (40mm)
-    toc_rows = [
-        ["1", "Desempeno vs Mercado", "Win rate, radar de capacidades, posicion"],
-        ["2", "Inteligencia Competitiva", "Rivales directos, patrones, detalle"],
-        ["3", "Analisis Temporal", "Composicion, presencia regional"],
-        ["4", "Costo de Oportunidad", "Escenarios financieros, potencial"],
-        ["5", "Recomendaciones", "Plan de accion y siguiente paso"],
-    ]
+    # Table of contents (47mm — 6 or 7 rows)
+    has_td = bool(data.get("tender_details"))
+    if has_td:
+        toc_rows = [
+            ["1", "Historial de Licitaciones", "Detalle participacion por participacion"],
+            ["2", "Desempeno vs Mercado", "Win rate, radar de capacidades, posicion"],
+            ["3", "Inteligencia Competitiva", "Rivales directos, patrones, detalle"],
+            ["4", "Analisis Temporal", "Composicion, presencia regional"],
+            ["5", "Costo de Oportunidad", "Escenarios financieros, potencial"],
+            ["6", "Recomendaciones", "Plan de accion y siguiente paso"],
+        ]
+    else:
+        toc_rows = [
+            ["1", "Desempeno vs Mercado", "Win rate, radar de capacidades, posicion"],
+            ["2", "Inteligencia Competitiva", "Rivales directos, patrones, detalle"],
+            ["3", "Analisis Temporal", "Composicion, presencia regional"],
+            ["4", "Costo de Oportunidad", "Escenarios financieros, potencial"],
+            ["5", "Recomendaciones", "Plan de accion y siguiente paso"],
+        ]
+    toc_h = 7 + len(toc_rows) * 6.5 + 2  # header + rows + padding
     layout.add_element(
-        40,
+        toc_h,
         lambda pdf, x, y, w, h, _r=toc_rows: render_table(
             pdf, x, y, w, h,
             headers=["#", "Seccion", "Contenido"],
@@ -453,6 +467,184 @@ def _build_page_1(layout, data, tmp_dir):
         ),
         label="table_contenido",
     )
+
+
+def _build_page_tender_detail(layout, data, tmp_dir):
+    """P2 (NUEVA): Detalle de Participaciones — tabla licitacion por licitacion.
+
+    Heights: 15 + 8 + table(7 + N*6.5) + 6 + 20 + 4 + 8 = ~198mm max (of 247)
+    Max 20 rows. Colores: verde suave adjudicadas, gris no adjudicadas.
+    """
+    tender_details = data.get("tender_details", [])
+    if not tender_details:
+        return  # skip page if no data
+
+    company = data.get("company", {})
+    nombre = _name(company.get("nombre", "Empresa"))
+
+    layout.new_page()
+
+    # Section heading (15mm)
+    layout.add_element(
+        SECTION_HEADING_H,
+        lambda pdf, x, y, w, h: render_section_heading(
+            pdf, x, y, w, h,
+            num=1, title="Historial de Licitaciones",
+            subtitle="Detalle de participaciones en Mercado Publico",
+        ),
+        label="section_tender_detail",
+    )
+
+    layout.add_spacer(SPACER_MD)  # 8mm
+
+    # --- Table with color-coded rows ---
+    max_rows = 20
+    display = tender_details[:max_rows]
+    total_n = len(tender_details)
+    n_won = sum(1 for t in tender_details if t.get("resultado") == "Adjudicada")
+    n_display = len(display)
+    wr_all = n_won / max(total_n, 1)
+
+    # Monto total operado (solo adjudicadas)
+    monto_total = sum(
+        _safe_float(t.get("monto", 0))
+        for t in tender_details
+        if t.get("resultado") == "Adjudicada"
+    )
+
+    # Build rows for custom render
+    table_data = []
+    for t in display:
+        ganador_str = ""
+        if t.get("resultado") != "Adjudicada" and t.get("ganador"):
+            ganador_str = _s(str(t["ganador"]))
+        table_data.append({
+            "codigo": _s(str(t.get("codigo", "-"))),
+            "fecha": _s(str(t.get("fecha", "-"))[:10]),
+            "tipo": _s(str(t.get("tipo", "-"))),
+            "monto": _money(t.get("monto", 0)),
+            "resultado": _s(str(t.get("resultado", "-"))),
+            "ganador": ganador_str,
+        })
+
+    # Table heights
+    header_h = 7
+    row_h = 6.5
+    table_total_h = header_h + n_display * row_h
+
+    # Custom render function for color-coded table
+    def _render_tender_table(pdf, x, y, w, h, _rows=table_data):
+        headers = ["Codigo", "Fecha", "Tipo", "Monto", "Resultado", "Ganador"]
+        col_ratios = [0.18, 0.12, 0.07, 0.15, 0.15, 0.33]
+        widths = [r * w for r in col_ratios]
+
+        cy = y
+
+        # Header row
+        pdf.set_fill_color(*COLOR_NAVY)
+        pdf.rect(x, cy, w, header_h, "F")
+        _set_font = lambda st, sz: pdf.set_font("Helvetica", st, sz)
+        _set_font("B", 7)
+        pdf.set_text_color(*COLOR_WHITE)
+
+        cx = x
+        for i, hdr in enumerate(headers):
+            pdf.set_xy(cx + 1, cy + 1)
+            pdf.cell(widths[i] - 2, header_h - 2, hdr, align="L")
+            cx += widths[i]
+        cy += header_h
+
+        # Data rows
+        for r_idx, row in enumerate(_rows):
+            is_won = row["resultado"] == "Adjudicada"
+
+            # Row background: green tint for wins, light gray alternate for losses
+            if is_won:
+                pdf.set_fill_color(230, 245, 230)  # verde suave
+            elif r_idx % 2 == 1:
+                pdf.set_fill_color(*COLOR_LIGHT_GRAY)
+            else:
+                pdf.set_fill_color(255, 255, 255)
+            pdf.rect(x, cy, w, row_h, "F")
+
+            _set_font("", 7)
+            pdf.set_text_color(*COLOR_DARK_GRAY)
+
+            cx = x
+            cells = [
+                row["codigo"], row["fecha"], row["tipo"],
+                row["monto"], row["resultado"], row["ganador"],
+            ]
+            for c_idx, cell_val in enumerate(cells):
+                # Bold resultado column
+                if c_idx == 4:
+                    if is_won:
+                        _set_font("B", 7)
+                        pdf.set_text_color(34, 120, 34)  # verde oscuro
+                    else:
+                        _set_font("", 7)
+                        pdf.set_text_color(*COLOR_MID_GRAY)
+                else:
+                    _set_font("", 7)
+                    pdf.set_text_color(*COLOR_DARK_GRAY)
+
+                # Truncate
+                max_w = widths[c_idx] - 3
+                display_text = _s(cell_val)
+                if pdf.get_string_width(display_text) > max_w:
+                    while len(display_text) > 0 and pdf.get_string_width(display_text + "...") > max_w:
+                        display_text = display_text[:-1]
+                    display_text = display_text + "..."
+
+                pdf.set_xy(cx + 1, cy + 1)
+                pdf.cell(widths[c_idx] - 2, row_h - 2, display_text, align="L")
+                cx += widths[c_idx]
+            cy += row_h
+
+        # Bottom line
+        pdf.set_draw_color(*COLOR_GRAY)
+        pdf.set_line_width(0.3)
+        pdf.line(x, cy, x + w, cy)
+        pdf.set_line_width(0.2)
+
+    layout.add_element(
+        table_total_h,
+        _render_tender_table,
+        label="table_tender_detail",
+    )
+
+    layout.add_spacer(6)  # 6mm
+
+    # Summary callout (20mm)
+    summary_text = (
+        "De las {} participaciones, {} adjudicadas ({:.1f}%). "
+        "Monto total adjudicado: {}.".format(
+            total_n, n_won, wr_all * 100, _money(monto_total),
+        )
+    )
+
+    layout.add_element(
+        20,
+        lambda pdf, x, y, w, h, _t=summary_text: render_callout(
+            pdf, x, y, w, h, text=_t, color=COLOR_GOLD,
+        ),
+        label="callout_tender_summary",
+    )
+
+    # Note if truncated (8mm)
+    if total_n > max_rows:
+        nota = "Mostrando {} mas recientes de {} participaciones totales.".format(
+            max_rows, total_n,
+        )
+        layout.add_spacer(SPACER_SM)  # 4mm
+        layout.add_element(
+            8,
+            lambda pdf, x, y, w, h, _t=nota: render_body(
+                pdf, x, y, w, h, text=_t, font_size=7,
+            ),
+            label="nota_truncated",
+            allow_page_break=False,
+        )
 
 
 def _build_page_2(layout, data, tmp_dir):
@@ -477,7 +669,8 @@ def _build_page_2(layout, data, tmp_dir):
         SECTION_HEADING_H,
         lambda pdf, x, y, w, h: render_section_heading(
             pdf, x, y, w, h,
-            num=1, title="Desempeno vs Mercado",
+            num=2 if data.get("tender_details") else 1,
+            title="Desempeno vs Mercado",
             subtitle="Analisis comparativo de su posicion competitiva",
         ),
         label="section_desempeno",
@@ -605,7 +798,8 @@ def _build_page_3(layout, data, tmp_dir):
         SECTION_HEADING_H,
         lambda pdf, x, y, w, h: render_section_heading(
             pdf, x, y, w, h,
-            num=2, title="Inteligencia Competitiva",
+            num=3 if data.get("tender_details") else 2,
+            title="Inteligencia Competitiva",
             subtitle="Rivales directos y patrones de competencia",
         ),
         label="section_competitiva",
@@ -775,7 +969,8 @@ def _build_page_4(layout, data, tmp_dir):
         SECTION_HEADING_H,
         lambda pdf, x, y, w, h: render_section_heading(
             pdf, x, y, w, h,
-            num=3, title="Analisis Temporal y Sectorial",
+            num=4 if data.get("tender_details") else 3,
+            title="Analisis Temporal y Sectorial",
             subtitle="Composicion de licitaciones y presencia regional",
         ),
         label="section_temporal",
@@ -912,7 +1107,8 @@ def _build_page_5(layout, data, tmp_dir):
         SECTION_HEADING_H,
         lambda pdf, x, y, w, h: render_section_heading(
             pdf, x, y, w, h,
-            num=4, title="Costo de Oportunidad",
+            num=5 if data.get("tender_details") else 4,
+            title="Costo de Oportunidad",
             subtitle="Cuantificacion del potencial de mejora",
         ),
         label="section_oportunidad",
@@ -993,7 +1189,8 @@ def _build_page_6(layout, data, tmp_dir):
         SECTION_HEADING_H,
         lambda pdf, x, y, w, h: render_section_heading(
             pdf, x, y, w, h,
-            num=5, title="Recomendaciones",
+            num=6 if data.get("tender_details") else 5,
+            title="Recomendaciones",
             subtitle="Plan de accion basado en los hallazgos del diagnostico",
         ),
         label="section_recs",
@@ -1091,7 +1288,7 @@ def _build_page_6(layout, data, tmp_dir):
 # ---------------------------------------------------------------------------
 
 def build_diagnostic(data, output_path=None):
-    """Build the full 6-page diagnostic PDF.
+    """Build the full 7-page diagnostic PDF (6 if no tender_details).
 
     Args:
         data: Dict from load_data(rut).
@@ -1113,32 +1310,39 @@ def build_diagnostic(data, output_path=None):
     # Page counter for footer
     _page_counter = [0]
 
+    # Determine total pages (7 if tender_details exist, else 6)
+    has_tender_details = bool(data.get("tender_details"))
+    n_pages = 7 if has_tender_details else 6
+
     def _footer(pdf, x, y, w, h):
         _page_counter[0] += 1
         render_footer(pdf, x, y, w, h,
-                      page_num=_page_counter[0], total_pages=6)
+                      page_num=_page_counter[0], total_pages=n_pages)
 
     layout.set_footer(_footer, FOOTER_H)
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        # Build all 6 pages
         _build_page_1(layout, data, tmp_dir)
         print("  P1 Portada: {:.0f}mm used".format(layout.page_height_used()))
 
+        if has_tender_details:
+            _build_page_tender_detail(layout, data, tmp_dir)
+            print("  P2 Detalle Licitaciones: {:.0f}mm used".format(layout.page_height_used()))
+
         _build_page_2(layout, data, tmp_dir)
-        print("  P2 Desempeno: {:.0f}mm used".format(layout.page_height_used()))
+        print("  P{} Desempeno: {{:.0f}}mm used".format(3 if has_tender_details else 2).format(layout.page_height_used()))
 
         _build_page_3(layout, data, tmp_dir)
-        print("  P3 Competitiva: {:.0f}mm used".format(layout.page_height_used()))
+        print("  P{} Competitiva: {{:.0f}}mm used".format(4 if has_tender_details else 3).format(layout.page_height_used()))
 
         _build_page_4(layout, data, tmp_dir)
-        print("  P4 Temporal: {:.0f}mm used".format(layout.page_height_used()))
+        print("  P{} Temporal: {{:.0f}}mm used".format(5 if has_tender_details else 4).format(layout.page_height_used()))
 
         _build_page_5(layout, data, tmp_dir)
-        print("  P5 Oportunidad: {:.0f}mm used".format(layout.page_height_used()))
+        print("  P{} Oportunidad: {{:.0f}}mm used".format(6 if has_tender_details else 5).format(layout.page_height_used()))
 
         _build_page_6(layout, data, tmp_dir)
-        print("  P6 Recomendaciones: {:.0f}mm used".format(layout.page_height_used()))
+        print("  P{} Recomendaciones: {{:.0f}}mm used".format(7 if has_tender_details else 6).format(layout.page_height_used()))
 
         layout.save(output_path)
 

@@ -1,7 +1,7 @@
 # Progress — PDF Premium Worth $250K
 
 ## Estado: EN PROGRESO
-## Features completadas: 1/7
+## Features completadas: 2/7
 
 ---
 
@@ -20,6 +20,21 @@
   - `_load_peer_comparison()`: pares ±30% bids + misma región
   - `_load_rival_deep()`: top 3 rivales con licitaciones ganadas sobre empresa
   - `_load_trend()`: WR por semestre
+
+---
+
+## Feature 2: new_page_tender_detail ✓
+- **Estado**: DONE
+- **Verificado**: 2026-04-02
+- **Resultado**: Página 2 "Historial de Licitaciones" generada correctamente
+  - P2 usa 180mm (de 247mm disponibles) — cabe holgado
+  - 19 licitaciones cargadas para 132385-4, 4 adjudicadas (21.1%)
+  - Tabla color-coded: verde suave para adjudicadas, gris alterno para no adjudicadas
+  - Resultado bold verde/gris, columna Ganador cuando no adjudicada
+  - Summary callout con totales y monto adjudicado
+  - Nota de truncamiento si >20 registros
+  - 7 páginas totales, 118KB, generación exitosa
+- **Fix aplicado**: Faltaban imports de COLOR_WHITE, COLOR_DARK_GRAY, COLOR_MID_GRAY, COLOR_LIGHT_GRAY en build_diagnostic_pdf.py (NameError en render)
 
 ---
 
