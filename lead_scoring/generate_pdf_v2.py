@@ -187,6 +187,7 @@ def load_data(rut):
     data["peer_comparison"] = _load_peer_comparison(data)
     data["rival_deep"] = _load_rival_deep(rut, data)
     data["trend"] = _load_trend(data.get("tender_details", []))
+    data["sweet_spot"] = _load_sweet_spot(rut, data)
 
     return data
 
@@ -519,6 +520,225 @@ def _load_trend(tender_details):
         }
 
     return trend
+
+def _extract_modality(tipo_full):
+    """Extract real modality code from tender_procurementMethodDetails string."""
+    import re
+    # Match codes in parentheses: (LP), (LE), (L1), (LQ), (LR), (H2), (I2), (LS)
+    m = re.search(r'\(([A-Z][A-Z0-9])\)', tipo_full)
+    if m:
+        return m.group(1)
+    # Fallback heuristics for entries without parenthesized code
+    tfl = tipo_full.lower()
+    if "trato directo" in tfl:
+        return "L1"
+    if "privada" in tfl and "mayor a 5000" in tfl:
+        return "I2"
+    if "privada" in tfl and "2000" in tfl and "5000" in tfl:
+        return "H2"
+    if "privada" in tfl and "mayor" in tfl and "1000" in tfl:
+        return "LE-Priv"
+    if "privada" in tfl:
+        return "LE-Priv"
+    if "mayor 1000" in tfl or "mayor a 1000" in tfl:
+        return "LP"
+    if "100" in tfl and "1000" in tfl:
+        return "LE"
+    if "menor" in tfl and "100" in tfl:
+        return "L1"
+    return "Otro"
+
+
+def _load_sweet_spot(rut, data):
+    """Calcula el sweet spot comercial: WR por monto, competidores, modalidad y plazo."""
+    tender_details = data.get("tender_details", [])
+    if not tender_details:
+        return {}
+
+    # --- Enrich tender_details with n_tenderers and plazo ---
+    link_mains = [td["_link_main"] for td in tender_details]
+    link_set = set(link_mains)
+
+    # Count tenderers per tender
+    tenderers_path = FILTERED_DIR / "tenderers_construction.parquet"
+    n_tenderers_map = {}
+    if tenderers_path.exists():
+        tenderers_df = pd.read_parquet(tenderers_path, columns=["_link_main"])
+        relevant = tenderers_df[tenderers_df["_link_main"].isin(link_set)]
+        n_tenderers_map = relevant.groupby("_link_main").size().to_dict()
+
+    # Get plazo (tender period duration) from tenders
+    tenders_path = FILTERED_DIR / "tenders_construction.parquet"
+    plazo_map = {}
+    if tenders_path.exists():
+        tenders_df = pd.read_parquet(
+            tenders_path,
+            columns=["_link", "tender_tenderPeriod_durationInDays"],
+        )
+        relevant_t = tenders_df[tenders_df["_link"].isin(link_set)]
+        for _, row in relevant_t.iterrows():
+            try:
+                days = float(row["tender_tenderPeriod_durationInDays"])
+                if not np.isnan(days) and days > 0:
+                    plazo_map[row["_link"]] = int(days)
+            except (ValueError, TypeError):
+                pass
+
+    # Build enriched records
+    records = []
+    for td in tender_details:
+        lm = td["_link_main"]
+        won = td["resultado"] == "Adjudicada"
+        monto = td.get("monto", 0) or 0
+        modality = _extract_modality(td.get("tipo_full", ""))
+        n_tend = n_tenderers_map.get(lm, 0)
+        plazo = plazo_map.get(lm, None)
+        records.append({
+            "won": won,
+            "monto": monto,
+            "modality": modality,
+            "n_tenderers": n_tend,
+            "plazo_dias": plazo,
+        })
+
+    # --- Helper: compute WR per bucket ---
+    def _wr_by_bucket(records_list, key_fn, bucket_fn):
+        """Group records by bucket_fn(record) and compute WR per bucket."""
+        buckets = {}
+        for r in records_list:
+            val = key_fn(r)
+            if val is None:
+                continue
+            bucket = bucket_fn(val)
+            if bucket not in buckets:
+                buckets[bucket] = {"total": 0, "won": 0}
+            buckets[bucket]["total"] += 1
+            if r["won"]:
+                buckets[bucket]["won"] += 1
+        result = {}
+        for b, counts in buckets.items():
+            result[b] = {
+                "total": counts["total"],
+                "won": counts["won"],
+                "wr": counts["won"] / counts["total"] if counts["total"] > 0 else 0,
+            }
+        return result
+
+    # (1) WR por rango de monto
+    def monto_bucket(m):
+        if m <= 0:
+            return None
+        if m < 50_000_000:
+            return "0-50M"
+        if m < 100_000_000:
+            return "50-100M"
+        if m < 250_000_000:
+            return "100-250M"
+        if m < 500_000_000:
+            return "250-500M"
+        return "500M+"
+
+    wr_monto = _wr_by_bucket(
+        records, lambda r: r["monto"], lambda m: monto_bucket(m),
+    )
+    # Filter out None bucket
+    wr_monto = {k: v for k, v in wr_monto.items() if k is not None}
+
+    # (2) WR por numero de postores
+    def comp_bucket(n):
+        if n <= 0:
+            return None
+        if n <= 2:
+            return "1-2"
+        if n <= 5:
+            return "3-5"
+        if n <= 10:
+            return "6-10"
+        return "10+"
+
+    wr_comp = _wr_by_bucket(
+        records, lambda r: r["n_tenderers"], lambda n: comp_bucket(n),
+    )
+    wr_comp = {k: v for k, v in wr_comp.items() if k is not None}
+
+    # (3) WR por modalidad
+    wr_mod = _wr_by_bucket(
+        records, lambda r: r["modality"], lambda m: m,
+    )
+
+    # (4) WR por plazo de preparacion
+    def plazo_bucket(d):
+        if d is None or d <= 0:
+            return None
+        if d <= 15:
+            return "0-15 dias"
+        if d <= 30:
+            return "15-30 dias"
+        if d <= 60:
+            return "30-60 dias"
+        return "60+ dias"
+
+    wr_plazo = _wr_by_bucket(
+        records, lambda r: r["plazo_dias"], lambda d: plazo_bucket(d),
+    )
+    wr_plazo = {k: v for k, v in wr_plazo.items() if k is not None}
+
+    # --- Find best in each dimension (require min 2 participaciones) ---
+    def _best(wr_dict, min_total=2):
+        candidates = {k: v for k, v in wr_dict.items() if v["total"] >= min_total}
+        if not candidates:
+            # Fallback: use all with at least 1
+            candidates = {k: v for k, v in wr_dict.items() if v["total"] >= 1}
+        if not candidates:
+            return None, 0, {}
+        best_key = max(candidates, key=lambda k: (candidates[k]["wr"], candidates[k]["total"]))
+        return best_key, candidates[best_key]["wr"], candidates[best_key]
+
+    best_monto, best_monto_wr, best_monto_stats = _best(wr_monto)
+    best_comp, best_comp_wr, best_comp_stats = _best(wr_comp)
+    best_mod, best_mod_wr, best_mod_stats = _best(wr_mod)
+    best_plazo, best_plazo_wr, best_plazo_stats = _best(wr_plazo)
+
+    # --- Generate insights ---
+    insights = []
+    if best_monto:
+        insights.append(
+            f"Mejor rendimiento en licitaciones de {best_monto} "
+            f"({best_monto_stats['won']}/{best_monto_stats['total']}, "
+            f"WR {best_monto_wr:.0%})"
+        )
+    if best_comp:
+        insights.append(
+            f"Mayor tasa de adjudicacion con {best_comp} postores "
+            f"(WR {best_comp_wr:.0%})"
+        )
+    if best_mod:
+        insights.append(
+            f"Modalidad mas exitosa: {best_mod} "
+            f"(WR {best_mod_wr:.0%})"
+        )
+    if best_plazo:
+        insights.append(
+            f"Mejor desempeno con plazos de {best_plazo} "
+            f"(WR {best_plazo_wr:.0%})"
+        )
+
+    return {
+        "best_monto_range": best_monto or "N/A",
+        "best_monto_wr": best_monto_wr,
+        "best_competidores": best_comp or "N/A",
+        "best_comp_wr": best_comp_wr,
+        "best_modalidad": best_mod or "N/A",
+        "best_mod_wr": best_mod_wr,
+        "best_plazo_range": best_plazo or "N/A",
+        "best_plazo_wr": best_plazo_wr,
+        "insights": insights,
+        "by_monto": wr_monto,
+        "by_competidores": wr_comp,
+        "by_modalidad": wr_mod,
+        "by_plazo": wr_plazo,
+    }
+
 
 def _load_lost_tender_details(rut, data):
     """Carga detalle de licitaciones perdidas vs rival principal desde parquets."""

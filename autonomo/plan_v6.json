@@ -1,0 +1,97 @@
+{
+  "project": "IngenIA Licitaciones — 4 Capas Premium de Valor",
+  "objective": "Implementar las 4 capas de datos que transforman el PDF de 'reporte histórico' a 'herramienta de decisión' que justifica $190K-$390K: sweet spot, buyer playbook, whitespace map, battlecards de rivales. Estos datos ya EXISTEN en los parquets — solo falta extraerlos y presentarlos.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "sweet_spot_matrix",
+      "description": "Crear función _load_sweet_spot(rut, data) en build_diagnostic_pdf.py que extraiga de tender_details (ya existe en load_data) el sweet spot comercial de la empresa. ANALIZAR: (1) WR por rango de monto: buckets [0-50M, 50-100M, 100-250M, 250-500M, 500M+] — para cada bucket: participaciones, adjudicaciones, WR. Identificar el bucket con MEJOR WR. (2) WR por número de postores: buckets [1-2, 3-5, 6-10, 10+] — misma lógica. Dato clave de GUERCUT: mediana 2 postores en wins vs 3 en losses. (3) WR por modalidad REAL (no solo LP/LE/L1 — incluir LQ, LR, etc. que están en los datos). (4) WR por plazo de preparación: calcular días entre publicación y cierre para cada tender. Buckets [0-15, 15-30, 30-60, 60+]. GUERCUT: mediana 56 días en wins vs 22 en losses. (5) Output: dict con 'sweet_spot': {'best_monto_range': '50-100M', 'best_monto_wr': 0.60, 'best_competidores': '1-2', 'best_comp_wr': 0.50, 'best_modalidad': 'LP', 'best_plazo_range': '30-60 días', 'best_plazo_wr': 0.45, 'insights': [...]}. VERIFICAR con datos reales de 132385-4 que los números tienen sentido.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); ss=d.get('sweet_spot',{}); print(f'Sweet spot: {ss.get(\"best_monto_range\",\"?\")} WR={ss.get(\"best_monto_wr\",0):.0%}'); assert 'best_monto_range' in ss; print('OK')\"",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 1,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "buyer_playbook",
+      "description": "Crear función _load_buyer_playbook(rut, data) que extraiga los COMPRADORES (organismos que publican licitaciones) contra los que ha competido la empresa. Los datos están en tenders_construction.parquet (campo buyer/procuringEntity) y parties_construction.parquet (contactos). ANALIZAR: (1) Para cada comprador (organismo): cuántas licitaciones publicó donde participó esta empresa, cuántas ganó, WR contra ese comprador. (2) Ranking: top 5 compradores por volumen de interacción. (3) Para cada top buyer: nombre, región, contacto si disponible (en parties), WR de la empresa contra ese buyer, monto total. (4) Identificar buyer_best (donde mejor WR) y buyer_worst (donde peor WR). (5) Output: dict 'buyer_playbook': [{'buyer_name': 'Municipalidad X', 'region': 'Valparaíso', 'participaciones': 5, 'adjudicadas': 2, 'wr': 0.40, 'monto_total': 500M, 'contacto': '...'}]. VERIFICAR con 132385-4.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); bp=d.get('buyer_playbook',[]); print(f'Buyers: {len(bp)}'); assert len(bp)>=1; print(f'Top: {bp[0].get(\"buyer_name\",\"?\")} WR={bp[0].get(\"wr\",0):.0%}'); print('OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "whitespace_map",
+      "description": "Crear función _load_whitespace(rut, data) que identifique oportunidades donde la empresa NO participa pero sus PARES SÍ. Usar peer_comparison (ya en load_data): empresas de tamaño similar (±30% bids) en misma región. ANALIZAR: (1) Listar TODAS las licitaciones donde algún par participó pero la empresa NO. (2) Agrupar por buyer (organismo) y modalidad. (3) Calcular: cuántas oportunidades se perdieron, monto acumulado, qué pares las capturaron. (4) Top 5 whitespace opportunities por monto. (5) Output: dict 'whitespace': {'total_missed': 326, 'total_monto_missed': '$15B', 'by_buyer': [{'buyer': 'MOP Valparaíso', 'missed': 12, 'monto': '$2.1B', 'captured_by': ['RIVAL A', 'RIVAL B']}], 'insight': 'Hay 326 adjudicaciones de pares que la empresa no persiguió...'}. VERIFICAR con 132385-4 — la otra IA encontró 326 adjudicaciones de pares.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); ws=d.get('whitespace',{}); print(f'Missed: {ws.get(\"total_missed\",0)}'); assert ws.get('total_missed',0)>0; print('OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "rival_battlecards",
+      "description": "Expandir rival_deep (ya en load_data) con BATTLECARDS: para cada rival top, identificar EN QUÉ CONDICIONES gana. ANALIZAR: (1) Para cada rival: en qué buyer gana sobre la empresa, en qué rango de monto, en qué modalidad, con cuántos postores. (2) Patrón: '${RIVAL} les gana consistentemente en licitaciones LP de ${BUYER} en rango $100-250M con 3+ postores.' (3) Contrapatrón: dónde la empresa le GANA al rival (si hay datos). (4) Output: expandir rival_deep con campo 'battlecard': {'beats_us_in': 'LP, $100-250M, buyer=MOP', 'we_beat_them_in': 'LE, $50-100M', 'pattern': 'texto'}. VERIFICAR con 132385-4.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); rd=d.get('rival_deep',[]); bc=rd[0].get('battlecard',{}) if rd else {}; print(f'Battlecard: {bc.get(\"pattern\",\"N/A\")[:80]}'); print('OK')\"",
+      "depends_on": [],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "pdf_new_pages",
+      "description": "Agregar 2-3 páginas NUEVAS al PDF usando los datos premium. Usar build_diagnostic_pdf.py + pdf_engine + pdf_components. (1) PÁGINA 'Sweet Spot Comercial': Tabla de WR por rango de monto (verde donde WR alto, rojo donde bajo). Tabla de WR por competidores. Insight: 'Su empresa rinde mejor en licitaciones de $50-100M con 1-2 postores y plazos mayores a 30 días.' Recomendación: 'Priorice oportunidades en este perfil.' (2) PÁGINA 'Buyer Playbook + Whitespace': Top 5 compradores con WR por cada uno. Whitespace: 'Hay {N} oportunidades de ${X}B en las que no participaron pero sus pares sí.' Top 3 oportunidades perdidas. (3) Integrar battlecards en la página de rivales existente (ya hay rival_deep — agregar el campo battlecard como insight adicional). Total final: 10-11 páginas. Actualizar n_pages en footers. VERIFICAR: PDF genera sin error, >150KB, client-safe.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | tail -3",
+      "depends_on": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "generate_verify_all",
+      "description": "Generar 4 PDFs finales en diagnosticos_v5/. Verificar: (1) Todos generan sin error, >150KB. (2) Client-safe. (3) Tests pasan. (4) Git commit de todo. (5) Actualizar .apos/HANDOFF.md y RETOMAR.md con estado final.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pathlib import Path; pdfs=list(Path('data/output/diagnosticos_v5').glob('*.pdf')); assert len(pdfs)>=3; print(f'{len(pdfs)} PDFs v5 OK')\"",
+      "depends_on": [
+        5
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-04-02T15:00:00",
+  "rules": [
+    "Los datos para las 4 capas YA EXISTEN en los parquets — NO inventar datos",
+    "tender_details ya está en load_data() — cruzar con tenders_construction para buyers y plazos",
+    "parties_construction tiene contactos de compradores (buyer contactPoint)",
+    "peer_comparison ya está en load_data() — usarlo para whitespace",
+    "rival_deep ya está en load_data() — expandirlo con battlecards",
+    "Modalidades reales: incluir LQ, LR, H2, no solo LP/LE/L1",
+    "El PDF es producto PAGADO — CERO pricing dentro",
+    "Layout matemático: pdf_engine con sum(heights) <= 257mm por página",
+    "Client-safe: nunca score_*, cluster, xgb_*, km_*, pipeline, algoritmo",
+    "Si un dato no existe para una empresa, omitir la sección — no inventar"
+  ]
+}
