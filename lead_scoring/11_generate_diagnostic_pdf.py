@@ -214,7 +214,8 @@ def load_data(rut):
 
         # Resiliencia: inversa de loss_rate (menos derrotas = mejor)
         loss = data.get("loss", {})
-        loss_rate = float(loss.get("loss_rate", 0.5) or 0.5)
+        _lr = loss.get("loss_rate")
+        loss_rate = float(_lr) if _lr is not None and not (isinstance(_lr, float) and _lr != _lr) else 0.5
         loss_col = active2["total_lost"].dropna() / active2["total_bids"].clip(lower=1) if "total_lost" in active2.columns else None
         if loss_col is not None and len(loss_col) > 0:
             percentiles["Resiliencia"] = float((loss_col >= loss_rate).sum() / len(loss_col) * 100)
@@ -783,7 +784,7 @@ def build_pdf(data, charts, output_path, notes=None):
 
     # Rival info boxes
     pdf.set_text_color(*C_TEXT)
-    total_lost = int(loss.get("total_lost_loss", company.get("total_lost", 0)))
+    total_lost = int(loss.get("total_lost_loss", loss.get("total_lost", company.get("total_lost", 0))) or 0)
     has_rivals = False
 
     for i in [1, 2]:
@@ -1260,7 +1261,7 @@ def generate_ai_notes(data, output_path):
             "monto_total": float(company.get("monto_total", 0)),
             "region": _s(company.get("region", "")),
             "dias_desde_ultima": int(company.get("dias_desde_ultima", 0)),
-            "total_lost": int(loss.get("total_lost_loss", 0)),
+            "total_lost": int(loss.get("total_lost_loss", loss.get("total_lost", 0)) or 0),
             "top_rival_1": _name(loss.get("top_rival_1_name", "")),
             "top_rival_1_count": int(loss.get("top_rival_1_count", 0)) if pd.notna(loss.get("top_rival_1_count")) else 0,
             "top_rival_2": _name(loss.get("top_rival_2_name", "")),

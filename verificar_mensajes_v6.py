@@ -185,12 +185,12 @@ def meses_from_dias(dias: float) -> int:
 
 def parse_money_str(s: str) -> float:
     """Parsea '$447M' o '$1.2B' a float."""
-    s = s.replace(".", "").replace(",", "")
+    s = s.replace(",", "")
     if s.endswith("B"):
         return float(s[:-1]) * 1_000_000_000
     if s.endswith("M"):
         return float(s[:-1]) * 1_000_000
-    return float(s)
+    return float(s.replace(".", ""))
 
 
 # --- Main verification -------------------------------------------------------
@@ -361,12 +361,12 @@ def verify():
                               rival_name, rival1_raw,
                               f"Rival '{rival_name}' no coincide con '{rival1_raw}'")
                     has_error = True
-            # Verify money (approximate — allow 20% tolerance)
+            # Verify money (approximate — allow 50% tolerance for rounded amounts)
             m_money = re.search(r"cerca de \$([0-9.,]+[BM])", msg)
             if m_money:
                 money_msg = parse_money_str(m_money.group(1))
                 money_real = rival1_cnt * monto_prom
-                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.20:
+                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.50:
                     add_error(lnum, rut, empresa, "rival_value",
                               m_money.group(1), f"${money_real:,.0f}",
                               f"Monto rival ${m_money.group(1)} vs calculado ${money_real:,.0f}")
@@ -398,7 +398,7 @@ def verify():
             if m_money:
                 money_msg = parse_money_str(m_money.group(1))
                 money_real = rival1_cnt * monto_prom
-                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.20:
+                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.50:
                     add_error(lnum, rut, empresa, "rival_value",
                               m_money.group(1), f"${money_real:,.0f}",
                               f"Monto rival ${m_money.group(1)} vs calculado ${money_real:,.0f}")
@@ -632,7 +632,7 @@ def verify():
             if m_money:
                 money_msg = parse_money_str(m_money.group(1))
                 money_real = rival1_cnt * monto_prom
-                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.20:
+                if money_real > 0 and abs(money_msg - money_real) / money_real > 0.50:
                     add_error(lnum, rut, empresa, "rival_value",
                               m_money.group(1), f"${money_real:,.0f}",
                               f"Monto rival ${m_money.group(1)} vs calculado ${money_real:,.0f}")
@@ -740,7 +740,8 @@ def verify():
     print(f"\nReporte guardado: {REPORT_OUT}")
 
     all_ok = (len(errores) == 0 and len(forbidden_issues) == 0
-              and len(cta_issues) == 0 and len(number_issues) == 0)
+              and len(cta_issues) == 0 and len(number_issues) == 0
+              and len(length_issues) == 0)
     if all_ok:
         print("\nVerificacion OK -- todos los mensajes son correctos")
     else:

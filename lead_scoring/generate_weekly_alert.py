@@ -253,6 +253,7 @@ def check_rival_activity(tenders, profile):
     if not rivals:
         return []
 
+    rival_ruts = {r["rut"]: r for r in rivals if r.get("rut")}
     rival_names = {r["nombre"].lower(): r for r in rivals}
     rival_moves = []
 
@@ -268,16 +269,21 @@ def check_rival_activity(tenders, profile):
         if not participants:
             continue
 
-        # Comparar con rivales conocidos
+        # Comparar con rivales conocidos (por RUT primero, nombre como fallback)
         for rut_participant in participants:
-            for rival in rivals:
-                rival_name = rival["nombre"]
-                # Match por nombre parcial (los RUTs de rivales vienen como nombres)
-                if (rival_name.lower() in str(rut_participant).lower() or
-                        str(rut_participant) in rival_name):
+            matched_rival = rival_ruts.get(str(rut_participant))
+            if not matched_rival:
+                # Fallback: match por nombre parcial
+                for rival in rivals:
+                    rival_name = rival["nombre"]
+                    if (rival_name.lower() in str(rut_participant).lower() or
+                            str(rut_participant) in rival_name):
+                        matched_rival = rival
+                        break
+            if matched_rival:
                     rival_moves.append({
-                        "rival": rival_name,
-                        "rival_wins_historicas": rival["wins"],
+                        "rival": matched_rival["nombre"],
+                        "rival_wins_historicas": matched_rival.get("wins", 0),
                         "tender_codigo": codigo,
                         "tender_nombre": str(tender.get("nombre", ""))[:70],
                         "tipo": "participando",

@@ -32,7 +32,7 @@ from pipeline_core import load_best_leads_dataframe
 from pipeline_validation import assert_dataframe_contract, write_run_manifest
 from utils import print_header, safe_request, extraer_rut_de_id
 
-RSS_URL = "http://www.mercadopublico.cl/Portal/feedrelevant.aspx"
+RSS_URL = "https://www.mercadopublico.cl/Portal/feedrelevant.aspx"
 
 # Keywords de construcción (del monitor original)
 KW_INCLUIR = [

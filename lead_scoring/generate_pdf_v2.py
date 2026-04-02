@@ -132,6 +132,7 @@ def load_data(rut):
                 col_data = active2[col].dropna()
                 if len(col_data) > 0:
                     if col == "dias_desde_ultima":
+                        # Más días inactivo = peor → contar cuántos tienen >= días = tu percentil
                         val = float(company.get(col, 9999))
                         pct = float(
                             (col_data >= val).sum() / len(col_data) * 100
@@ -153,7 +154,8 @@ def load_data(rut):
         percentiles["Diversificacion"] = [0, 33, 66, 100][min(n_tipos, 3)]
 
         loss = data.get("loss", {})
-        loss_rate = float(loss.get("loss_rate", 0.5) or 0.5)
+        _lr = loss.get("loss_rate")
+        loss_rate = float(_lr) if _lr is not None and not (isinstance(_lr, float) and _lr != _lr) else 0.5
         if "total_lost" in active2.columns:
             loss_col = (
                 active2["total_lost"].dropna()

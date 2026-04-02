@@ -235,7 +235,7 @@ def run_kmeans(df: pd.DataFrame, n_clusters: int = 5) -> pd.DataFrame:
     rank_df = pd.DataFrame(index=df.index)
     for feat in used_features:
         if feat == "dias_desde_ultima":
-            # Menor es mejor → rank ascendente (el de menos días queda con rank alto)
+            # Menor es mejor → ascending=False para que menos días = rank más alto
             rank_df[feat] = X[feat].rank(ascending=False, pct=True) * 100
         else:
             # Mayor es mejor

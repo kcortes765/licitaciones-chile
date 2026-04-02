@@ -267,13 +267,17 @@ def render_body(
         if len(output_lines) >= max_lines:
             break
 
-    # Truncar si excede
-    if len(output_lines) > max_lines:
+    # Truncar si excede o iguala max_lines (el break en >= no agrega el resto)
+    if len(output_lines) >= max_lines:
         output_lines = output_lines[:max_lines]
-        if output_lines:
-            output_lines[-1] = output_lines[-1].rstrip()
-            if len(output_lines[-1]) > 3:
-                output_lines[-1] = output_lines[-1][:-3] + "..."
+        if output_lines and any(True for p in text.split('\n') for w in p.split() if w):
+            # Si había más texto que lo que cabe, agregar ellipsis
+            total_words = sum(len(p.split()) for p in text.split('\n'))
+            shown_words = sum(len(l.split()) for l in output_lines)
+            if shown_words < total_words:
+                output_lines[-1] = output_lines[-1].rstrip()
+                if len(output_lines[-1]) > 3:
+                    output_lines[-1] = output_lines[-1][:-3] + "..."
 
     final_text = "\n".join(output_lines)
     pdf.set_xy(x + 1, y + 1)

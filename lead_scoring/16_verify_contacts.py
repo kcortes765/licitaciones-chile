@@ -278,6 +278,9 @@ def main():
 
     # === Paso 1: Normalizar teléfonos ===
     print("\n--- Normalizando teléfonos ---")
+    if "telefono" not in df.columns:
+        print("  AVISO: columna 'telefono' no existe en los datos. Ejecuta 06_enrich_contacts.py primero.")
+        df["telefono"] = None
     phone_results = df["telefono"].apply(normalize_phone_cl)
     df["telefono_normalizado"] = phone_results.apply(lambda x: x["normalized"]).astype("string")
     df["phone_type"] = phone_results.apply(lambda x: x["type"])

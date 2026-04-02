@@ -199,6 +199,13 @@ class PageLayout:
         if not self._fits(height_mm):
             if allow_page_break:
                 self.new_page()
+                # Re-validar después de new_page: si elemento > CONTENT_H, no cabe en ninguna página
+                if not self._fits(height_mm):
+                    logger.warning(
+                        "Elemento '%s' (%.1fmm) excede area util (%.1fmm) — omitido",
+                        label, height_mm, self.CONTENT_H,
+                    )
+                    return False
             else:
                 logger.warning(
                     "Elemento '%s' (%.1fmm) omitido — no cabe (%.1fmm disponible)",

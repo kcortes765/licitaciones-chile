@@ -417,8 +417,14 @@ def enrich_google_places(leads_df: pd.DataFrame) -> pd.DataFrame:
                 leads_df.at[df_idx, "gm_business_status"] = status
                 cached_entry["status"] = status
 
-        # Guardar en checkpoint
-        processed[rut] = cached_entry
+        # Guardar en checkpoint (solo si encontró algo o la búsqueda fue exitosa)
+        if result_place is not None or cached_entry.get("searched"):
+            processed[rut] = cached_entry
+        # Si no encontró nada Y hubo error de API, NO marcar como processed para reintentar
+        elif result_place is None and not cached_entry.get("searched"):
+            pass  # skip checkpoint — será reintentado
+        else:
+            processed[rut] = cached_entry
 
         # Checkpoint cada 10 empresas
         if (i + 1) % 10 == 0:

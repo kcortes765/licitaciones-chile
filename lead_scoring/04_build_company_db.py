@@ -370,7 +370,7 @@ def main():
     if mop_df is not None and len(mop_df) > 0 and "rut" in mop_df.columns:
         mop_cols = [c for c in ["rut", "tipo_mop", "categoria_mop"] if c in mop_df.columns]
         if "rut" in mop_cols:
-            mop_clean = mop_df[mop_df["rut"].notna()][mop_cols]
+            mop_clean = mop_df[mop_df["rut"].notna()][mop_cols].drop_duplicates(subset=["rut"])
             companies = companies.merge(mop_clean, on="rut", how="left")
     else:
         companies["tipo_mop"] = None
