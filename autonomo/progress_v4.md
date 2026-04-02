@@ -1,7 +1,7 @@
 # Progress — PDF Rebuild + Strategic Messaging
 
 ## Estado: EN PROGRESO
-## Features completadas: 7/9
+## Features completadas: 8/9
 ## Ultima sesion: 2026-04-01
 
 ---
@@ -137,3 +137,19 @@
 - **Verificacion**: 45/45 mensajes, 0 terminos prohibidos, 0 longitud excedida, 0 CTA faltante, 0 sin numero, 0 IngenIA, 0 CTA>4 palabras
 - **Source check**: score_total NOT in code, cl+uster NOT in code
 - **Verificacion plan**: `v7 OK`
+
+### Feature 8: verify_v7_final — DONE
+- **Archivo**: `verificar_mensajes_v7.py`
+- **Que hace**: Verificacion EXHAUSTIVA de los 45 mensajes v7 contra datos reales.
+- **Verificaciones (7 checks)**:
+  - Datos vs parquet: rival, %, conteo, meses, montos — 0 errores
+  - Terminos prohibidos (score, cluster, ML, pipeline, ranking, modelo, algoritmo, plataforma, herramienta, servicio, diagnostico, analisis) — 0 encontrados
+  - Longitud: max 500 chars antes de firma — 0 excedidas
+  - CTA: signo de interrogacion presente — 0 faltantes
+  - CTA: max 5 palabras — 0 excedidas
+  - Numero concreto ($, %, conteo) — 0 sin numero
+  - IngenIA Licitaciones — 0 encontrados (solo "Inteligencia de Licitaciones" en firma)
+- **Output**: verificacion_v7_report.json
+- **Resultado**: 45/45 OK, 0 errores en todas las categorias
+- **Tests suite**: 866 passed (1 mas que baseline)
+- **Verificacion plan**: `v7: 45/45 OK`
