@@ -1,0 +1,116 @@
+{
+  "project": "IngenIA Licitaciones — PDF Premium Worth $250K",
+  "objective": "Transformar el PDF diagnóstico de 6 páginas genéricas a 8-10 páginas de consultoría real que justifiquen $250K. Más profundidad, más datos, más insight, cero pricing. Usar build_diagnostic_pdf.py (pdf_engine + pdf_components + pdf_charts) como base.",
+  "working_dir": "C:\\Users\\kevin\\projects\\licitaciones",
+  "model": "claude-opus-4-6",
+  "max_turns_per_feature": 30,
+  "allowed_tools": [
+    "Bash",
+    "Read",
+    "Edit",
+    "Write",
+    "Glob",
+    "Grep"
+  ],
+  "features": [
+    {
+      "id": 1,
+      "name": "expand_data_loading",
+      "description": "Expandir la función load_data() en build_diagnostic_pdf.py para cargar MUCHA más data. Actualmente carga company, loss, industry, percentiles. AGREGAR: (1) tender_details: lista de TODAS las licitaciones donde participó la empresa (código, fecha, tipo, monto, resultado ganó/perdió, ganador si perdió). Cruzar tenderers_construction + suppliers_construction + tenders_construction. Max 50 más recientes. (2) type_breakdown: win_rate por tipo (WR_LP, WR_LE, WR_L1) calculado del tender_details. (3) peer_comparison: filtrar empresas de tamaño similar (±30% en total_bids Y misma región) y calcular avg_wr, avg_bids, avg_monto de ese segmento. NO comparar contra todo el mercado — comparar contra pares. (4) rival_deep: para cada rival top (hasta 3), calcular: su WR general, su monto promedio, cuántas licitaciones participó, en cuáles le ganó a esta empresa (lista con detalle). (5) trend: calcular WR por semestre (2022-H1, 2022-H2, 2023-H1, etc.) para mostrar tendencia temporal. (6) Guardar todo en data dict con keys: 'tender_details', 'type_breakdown', 'peer_comparison', 'rival_deep', 'trend'.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); print(f'tender_details: {len(d.get(\"tender_details\",[]))}'); print(f'type_breakdown: {d.get(\"type_breakdown\",{})}'); print(f'peer_comparison: {d.get(\"peer_comparison\",{})}'); print(f'rival_deep: {len(d.get(\"rival_deep\",[]))}'); print(f'trend: {d.get(\"trend\",{})}')\"",
+      "depends_on": [],
+      "status": "done",
+      "attempts": 2,
+      "max_attempts": 3
+    },
+    {
+      "id": 2,
+      "name": "new_page_tender_detail",
+      "description": "Agregar NUEVA página al PDF: 'Detalle de Participaciones'. Esta página no existía y es la que más valor agrega — muestra licitación por licitación. CONTENIDO: (1) Section heading: 'Historial de Licitaciones'. (2) Tabla grande con las 15-20 licitaciones más recientes: Código | Fecha | Tipo | Monto | Resultado (Adjudicada/No adj.) | Ganador (si no adj.). Usar colores: verde suave para adjudicadas, gris para no adjudicadas. (3) Resumen debajo: 'De las {N} participaciones, {W} adjudicadas ({WR}%). Monto total operado: ${X}M.' (4) Si hay más de 20 licitaciones, nota: 'Mostrando 20 más recientes de {N} totales.' Esta página va DESPUÉS de la portada (página 2). Mover las demás una posición. Usar pdf_engine add_element con heights pre-calculados. Tabla row height = 6mm, max 20 rows = 120mm + heading 15mm + spacer 8mm + summary 15mm + footer 10mm = 168mm (cabe en 257mm).",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | grep -i 'pagina\\|page\\|gener' | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 3,
+      "name": "new_page_rival_deep",
+      "description": "Agregar NUEVA página: 'Análisis Detallado de Rivales'. Reemplaza la sección simple de inteligencia competitiva con algo mucho más profundo. CONTENIDO: (1) Section heading: 'Inteligencia Competitiva Detallada'. (2) Para CADA rival top (hasta 3): Bloque con nombre bold + stats (su WR, total licitaciones, monto promedio). Tabla de licitaciones donde ese rival ganó sobre la empresa: Código | Fecha | Monto | Tipo. Insight de 1 línea: 'Este rival se adjudica más en LP de región X' o 'Este rival tiene WR de {X}%, {Y}pp sobre el suyo.' (3) Si hay espacio: mini-radar comparativo (empresa vs rival principal) — o tabla comparativa si el radar no cabe. Esta página reemplaza la página 3 actual (que solo tenía barras de rivales + tabla genérica). La nueva es mucho más profunda y vale el precio.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | grep -i 'pagina\\|page\\|gener' | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 4,
+      "name": "new_page_wr_by_type",
+      "description": "Agregar NUEVA página: 'Rendimiento por Tipo de Licitación'. CONTENIDO: (1) Section heading: 'Dónde Gana y Dónde Pierde'. (2) Tabla de WR por tipo: Tipo | Participaciones | Adjudicadas | Win Rate | vs Promedio Rubro. Destacar en verde donde WR > promedio rubro, rojo donde WR < promedio. (3) Insight: 'Su mejor rendimiento es en {tipo} con {WR}%, {X}pp sobre el rubro. Su peor rendimiento es en {tipo} con {WR}%.' (4) Si type_breakdown tiene datos suficientes: chart de barras agrupadas (Tu WR vs Rubro por tipo). (5) Recomendación específica: 'Considere concentrar esfuerzos en {tipo} donde tiene ventaja demostrada, y evaluar si las postulaciones en {tipo} justifican el costo de preparación dado su WR actual.' Esta es análisis que el cliente NO puede hacer solo mirando Mercado Público.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | grep -i 'pagina\\|page\\|gener' | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 5,
+      "name": "new_page_trend_peer",
+      "description": "Agregar NUEVA página: 'Tendencia y Comparación con Pares'. CONTENIDO: (1) Section heading: 'Evolución y Benchmark'. (2) Si hay trend data: tabla o mini-chart de WR por semestre (2022-H1 a 2025-H2). Texto: '¿Mejorando o empeorando?'. Si WR subió: 'Tendencia positiva — su WR mejoró de {X}% a {Y}% en los últimos {N} semestres.' Si bajó: 'Atención: su WR cayó de {X}% a {Y}%. Los rivales están mejorando o el mercado se volvió más competitivo.' (3) Peer comparison: 'Empresas de tamaño similar en su región ({N} empresas con {X}-{Y} licitaciones): WR promedio {Z}%, monto promedio ${W}M.' Comparar: 'Usted está {arriba/abajo} del promedio de sus pares en {X}pp.' Esto es MUCHO más valioso que comparar contra todo el mercado — compara contra empresas realmente comparables. (4) Si no hay suficientes pares en la región, ampliar a nivel nacional con nota.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | grep -i 'pagina\\|page\\|gener' | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 6,
+      "name": "rewrite_page_recommendations",
+      "description": "Reescribir la última página del PDF. ELIMINAR pricing cards (ya pagaron). REEMPLAZAR con: (1) Section heading: 'Plan de Acción Recomendado'. (2) Roadmap de 90 días — NO tips genéricos, sino acciones ESPECÍFICAS basadas en los datos: MES 1: 'Analizar las {N} licitaciones perdidas contra {RIVAL}. Identificar si la diferencia es precio, propuesta técnica o experiencia. Foco en {TIPO} donde su WR es más bajo.' MES 2: 'Participar selectivamente en {N} licitaciones {TIPO} en {REGIÓN}. Evitar licitaciones con más de {X} competidores donde su WR cae a {Y}%.' MES 3: 'Evaluar resultados. Si WR mejoró {X}pp, el impacto estimado es ${Y}M anuales adicionales.' (3) Callout final: 'Para implementar este plan con monitoreo continuo y alertas semanales, ofrecemos un servicio mensual de inteligencia. Conversemos: Sebastián Cortés, Ing. Civil — contacto@ingenia-licitaciones.cl' — UNA línea de upsell natural, no una página de venta. (4) Disclaimer legal. (5) Footer.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python build_diagnostic_pdf.py 132385-4 2>&1 | grep -i 'pagina\\|page\\|gener' | tail -3",
+      "depends_on": [
+        1
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    },
+    {
+      "id": 7,
+      "name": "assemble_and_generate",
+      "description": "Ensamblar todas las páginas nuevas en build_diagnostic_pdf.py. Orden final (8-10 páginas): Pág 1: Portada + resumen ejecutivo (existente). Pág 2: Detalle de participaciones (NUEVA). Pág 3: Desempeño vs mercado — gauge + radar + scatter (existente). Pág 4: Inteligencia competitiva detallada (NUEVA, reemplaza la vieja). Pág 5: Rendimiento por tipo (NUEVA). Pág 6: Tendencia + comparación con pares (NUEVA). Pág 7: Costo de oportunidad — waterfall + escenarios (existente). Pág 8: Plan de acción 90 días (NUEVA, reemplaza pricing). Actualizar total_pages en footers. Generar 4 PDFs: 132385-4, 121265-9, 105243-8, 137981-3. Guardar en diagnosticos_v4/. Verificar: todos generan sin error, >150KB, 8+ páginas, client-safe. Tests 865 pasan. Git commit.",
+      "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from pathlib import Path; pdfs=list(Path('data/output/diagnosticos_v4').glob('*.pdf')); assert len(pdfs)>=3, f'{len(pdfs)} PDFs'; sizes=[p.stat().st_size for p in pdfs]; assert all(s>100000 for s in sizes); print(f'{len(pdfs)} PDFs v4 OK, sizes: {[s//1024 for s in sizes]}KB')\"",
+      "depends_on": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "max_attempts": 3
+    }
+  ],
+  "created": "2026-04-02T00:00:00",
+  "rules": [
+    "El PDF es un PRODUCTO PAGADO ($250K). No debe tener pricing ni venta interna.",
+    "Cada nueva página debe aportar insight que el cliente NO puede obtener solo en Mercado Público.",
+    "Comparar contra PARES (empresas similares), no contra todo el mercado.",
+    "Recomendaciones ESPECÍFICAS con datos del lead, no genéricas.",
+    "Roadmap 90 días con acciones concretas por mes.",
+    "Usar pdf_engine.py (layout matemático) + pdf_components.py + pdf_charts.py",
+    "Sum heights por página <= 257mm. Si no cabe, omitir (nunca cortar).",
+    "Solo 3 colores: navy, gold, gray.",
+    "load_data() ya expandido con tender_details, type_breakdown, peer_comparison, rival_deep, trend.",
+    "UPSELL al servicio mensual: UNA línea al final, no una página de venta."
+  ]
+}

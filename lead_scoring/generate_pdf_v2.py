@@ -181,8 +181,344 @@ def load_data(rut):
     # Detalle de licitaciones perdidas vs rivales (para tabla pag 3)
     data["lost_tender_details"] = _load_lost_tender_details(rut, data)
 
+    # --- Expanded data for PDF Premium v4 ---
+    data["tender_details"] = _load_tender_details(rut)
+    data["type_breakdown"] = _load_type_breakdown(data.get("tender_details", []))
+    data["peer_comparison"] = _load_peer_comparison(data)
+    data["rival_deep"] = _load_rival_deep(rut, data)
+    data["trend"] = _load_trend(data.get("tender_details", []))
+
     return data
 
+
+def _load_tender_details(rut, max_records=50):
+    """Carga historial COMPLETO de licitaciones de la empresa.
+
+    Cruza tenderers (participaciones) con suppliers (ganadores) y tenders (metadata).
+    Retorna lista de dicts con: codigo, fecha, tipo, monto, resultado, ganador.
+    Ordenado por fecha desc, max 50 registros.
+    """
+    tenderers_path = FILTERED_DIR / "tenderers_construction.parquet"
+    suppliers_path = FILTERED_DIR / "suppliers_construction.parquet"
+    tenders_path = FILTERED_DIR / "tenders_construction.parquet"
+    awards_path = FILTERED_DIR / "awards_construction.parquet"
+
+    for p in [tenderers_path, suppliers_path, tenders_path, awards_path]:
+        if not p.exists():
+            return []
+
+    rut_clean = rut.replace("-", "")
+    company_id = "CL-MP-" + rut_clean
+
+    tenderers = pd.read_parquet(tenderers_path)
+    suppliers = pd.read_parquet(suppliers_path)
+    tenders = pd.read_parquet(tenders_path)
+    awards = pd.read_parquet(awards_path)
+
+    # Licitaciones donde participo la empresa
+    our_entries = tenderers[tenderers["id"] == company_id]
+    our_link_mains = set(our_entries["_link_main"])
+
+    # Licitaciones que gano la empresa
+    our_wins = set(suppliers[suppliers["id"] == company_id]["_link_main"])
+
+    # Build winner lookup: _link_main -> (winner_id, winner_name)
+    winner_map = {}
+    for _, row in suppliers.iterrows():
+        lm = row["_link_main"]
+        if lm in our_link_mains:
+            winner_map[lm] = (str(row.get("id", "")), str(row.get("name", "")))
+
+    # Tender metadata lookup
+    tenders_idx = tenders.set_index("_link")
+
+    # Awards lookup
+    awards_by_main = {}
+    for _, row in awards.iterrows():
+        lm = row.get("_link_main")
+        if lm in our_link_mains:
+            try:
+                awards_by_main[lm] = float(row["value_amount"])
+            except (ValueError, TypeError):
+                pass
+
+    details = []
+    for link_main in our_link_mains:
+        if link_main not in tenders_idx.index:
+            continue
+        t = tenders_idx.loc[link_main]
+        if isinstance(t, pd.DataFrame):
+            t = t.iloc[0]
+
+        fecha_raw = str(t.get("date", ""))[:10]
+        tipo_raw = str(t.get("tender_procurementMethodDetails", ""))
+        # Simplify type: extract LP, LE, L1
+        tipo_short = "Otro"
+        if "(LP)" in tipo_raw or "Publica" in tipo_raw or "P\xfablica" in tipo_raw:
+            tipo_short = "LP"
+        elif "(LE)" in tipo_raw or "Privada" in tipo_raw:
+            tipo_short = "LE"
+        elif "(L1)" in tipo_raw or "Trato Directo" in tipo_raw:
+            tipo_short = "L1"
+
+        won = link_main in our_wins
+        monto = awards_by_main.get(link_main, 0)
+
+        ganador_name = ""
+        if not won and link_main in winner_map:
+            w_id, w_name = winner_map[link_main]
+            if w_id != company_id:
+                # Clean winner name
+                if "|" in w_name:
+                    parts = [p.strip() for p in w_name.split("|")]
+                    non_upper = [p for p in parts if not p.isupper() and len(p) > 3]
+                    ganador_name = non_upper[0] if non_upper else min(parts, key=len)
+                else:
+                    ganador_name = w_name
+
+        details.append({
+            "codigo": str(t.get("tender_id", "")),
+            "fecha": fecha_raw,
+            "tipo": tipo_short,
+            "tipo_full": tipo_raw,
+            "monto": monto,
+            "resultado": "Adjudicada" if won else "No adjudicada",
+            "ganador": ganador_name,
+            "_link_main": link_main,
+        })
+
+    # Sort by date descending
+    details.sort(key=lambda x: x["fecha"], reverse=True)
+    return details[:max_records]
+
+
+def _load_type_breakdown(tender_details):
+    """Calcula win rate por tipo de licitacion (LP, LE, L1) desde tender_details."""
+    if not tender_details:
+        return {}
+
+    breakdown = {}
+    by_type = {}
+    for td in tender_details:
+        tipo = td["tipo"]
+        if tipo not in by_type:
+            by_type[tipo] = {"total": 0, "won": 0}
+        by_type[tipo]["total"] += 1
+        if td["resultado"] == "Adjudicada":
+            by_type[tipo]["won"] += 1
+
+    for tipo, counts in by_type.items():
+        wr = counts["won"] / counts["total"] if counts["total"] > 0 else 0
+        breakdown[tipo] = {
+            "total": counts["total"],
+            "won": counts["won"],
+            "win_rate": wr,
+        }
+
+    return breakdown
+
+
+def _load_peer_comparison(data):
+    """Compara contra pares: empresas de tamano similar (+-30% total_bids) Y misma region."""
+    company = data.get("company", {})
+    if not company:
+        return {}
+
+    db_path = FILTERED_DIR / "company_database.parquet"
+    if not db_path.exists():
+        return {}
+
+    db = pd.read_parquet(db_path)
+    active = db[db["total_bids"] >= 3].copy()
+
+    total_bids = float(company.get("total_bids", 0))
+    region = str(company.get("region", "")).strip()
+    rut = str(company.get("rut", ""))
+
+    if total_bids < 3:
+        return {}
+
+    # Filter: +-30% total_bids AND same region
+    lower = total_bids * 0.7
+    upper = total_bids * 1.3
+    peers = active[
+        (active["total_bids"] >= lower)
+        & (active["total_bids"] <= upper)
+        & (active["region"].str.strip() == region)
+        & (active["rut"] != rut)
+    ]
+
+    # If too few peers in region, expand nationally (but keep note)
+    scope = "regional"
+    if len(peers) < 5:
+        peers = active[
+            (active["total_bids"] >= lower)
+            & (active["total_bids"] <= upper)
+            & (active["rut"] != rut)
+        ]
+        scope = "nacional"
+
+    if len(peers) == 0:
+        return {}
+
+    return {
+        "n_peers": int(len(peers)),
+        "scope": scope,
+        "region": region,
+        "avg_wr": float(peers["win_rate"].mean()),
+        "median_wr": float(peers["win_rate"].median()),
+        "avg_bids": float(peers["total_bids"].mean()),
+        "avg_monto": float(peers["monto_promedio"].mean()) if "monto_promedio" in peers.columns else 0,
+        "bids_range": (int(peers["total_bids"].min()), int(peers["total_bids"].max())),
+        "company_wr": float(company.get("win_rate", 0)),
+        "diff_pp": float(company.get("win_rate", 0)) - float(peers["win_rate"].mean()),
+    }
+
+
+def _load_rival_deep(rut, data):
+    """Analisis profundo de hasta 3 rivales principales.
+
+    Para cada rival: su WR general, monto promedio, total licitaciones,
+    y lista de licitaciones donde le gano a esta empresa.
+    """
+    loss = data.get("loss", {})
+    if not loss:
+        return []
+
+    db_path = FILTERED_DIR / "company_database.parquet"
+    if not db_path.exists():
+        return []
+
+    db = pd.read_parquet(db_path)
+
+    tenderers_path = FILTERED_DIR / "tenderers_construction.parquet"
+    suppliers_path = FILTERED_DIR / "suppliers_construction.parquet"
+    tenders_path = FILTERED_DIR / "tenders_construction.parquet"
+    awards_path = FILTERED_DIR / "awards_construction.parquet"
+
+    for p in [tenderers_path, suppliers_path, tenders_path, awards_path]:
+        if not p.exists():
+            return []
+
+    rut_clean = rut.replace("-", "")
+    company_id = "CL-MP-" + rut_clean
+
+    tenderers = pd.read_parquet(tenderers_path)
+    suppliers = pd.read_parquet(suppliers_path)
+    tenders = pd.read_parquet(tenders_path)
+    awards = pd.read_parquet(awards_path)
+
+    # Our tenders
+    our_tenders = set(tenderers[tenderers["id"] == company_id]["_link_main"])
+
+    # Tenders index
+    tenders_idx = tenders.set_index("_link")
+
+    # Awards index
+    awards_map = {}
+    for _, row in awards.iterrows():
+        lm = row.get("_link_main")
+        if lm in our_tenders:
+            try:
+                awards_map[lm] = float(row["value_amount"])
+            except (ValueError, TypeError):
+                pass
+
+    rivals = []
+    for i in range(1, 4):
+        rival_rut = loss.get(f"top_rival_{i}")
+        rival_name = loss.get(f"top_rival_{i}_name", "")
+        rival_count = loss.get(f"top_rival_{i}_count", 0)
+
+        if not rival_rut or pd.isna(rival_rut):
+            continue
+
+        rival_rut = str(rival_rut)
+        rival_clean = rival_rut.replace("-", "")
+        rival_id = "CL-MP-" + rival_clean
+
+        # Rival stats from company_database
+        rival_db = db[db["rut"] == rival_rut]
+        rival_stats = {}
+        if len(rival_db) > 0:
+            r = rival_db.iloc[0]
+            rival_stats = {
+                "total_bids": int(r.get("total_bids", 0)),
+                "total_wins": int(r.get("total_wins", 0)),
+                "win_rate": float(r.get("win_rate", 0)),
+                "monto_promedio": float(r.get("monto_promedio", 0)),
+                "region": str(r.get("region", "")),
+            }
+
+        # Clean rival name
+        if rival_name and "|" in str(rival_name):
+            parts = [p.strip() for p in str(rival_name).split("|")]
+            non_upper = [p for p in parts if not p.isupper() and len(p) > 3]
+            rival_name_clean = non_upper[0] if non_upper else min(parts, key=len)
+        else:
+            rival_name_clean = str(rival_name) if rival_name else "Rival"
+
+        # Tenders where rival won over us
+        rival_wins = set(suppliers[suppliers["id"] == rival_id]["_link_main"])
+        lost_to_rival = our_tenders & rival_wins
+
+        won_details = []
+        for link_main in sorted(lost_to_rival, reverse=True)[:8]:
+            if link_main not in tenders_idx.index:
+                continue
+            t = tenders_idx.loc[link_main]
+            if isinstance(t, pd.DataFrame):
+                t = t.iloc[0]
+            won_details.append({
+                "codigo": str(t.get("tender_id", "")),
+                "fecha": str(t.get("date", ""))[:10],
+                "tipo": str(t.get("tender_procurementMethodDetails", "")),
+                "monto": awards_map.get(link_main, 0),
+            })
+
+        rivals.append({
+            "rut": rival_rut,
+            "name": rival_name_clean,
+            "count": int(rival_count) if pd.notna(rival_count) else 0,
+            "stats": rival_stats,
+            "won_over_us": won_details,
+        })
+
+    return rivals
+
+
+def _load_trend(tender_details):
+    """Calcula win rate por semestre (2022-H1, 2022-H2, ...) desde tender_details."""
+    if not tender_details:
+        return {}
+
+    by_semester = {}
+    for td in tender_details:
+        fecha = td.get("fecha", "")
+        if len(fecha) < 7:
+            continue
+        try:
+            year = int(fecha[:4])
+            month = int(fecha[5:7])
+        except (ValueError, IndexError):
+            continue
+        semester = f"{year}-H{'1' if month <= 6 else '2'}"
+        if semester not in by_semester:
+            by_semester[semester] = {"total": 0, "won": 0}
+        by_semester[semester]["total"] += 1
+        if td["resultado"] == "Adjudicada":
+            by_semester[semester]["won"] += 1
+
+    trend = {}
+    for sem in sorted(by_semester.keys()):
+        counts = by_semester[sem]
+        trend[sem] = {
+            "total": counts["total"],
+            "won": counts["won"],
+            "win_rate": counts["won"] / counts["total"] if counts["total"] > 0 else 0,
+        }
+
+    return trend
 
 def _load_lost_tender_details(rut, data):
     """Carga detalle de licitaciones perdidas vs rival principal desde parquets."""
