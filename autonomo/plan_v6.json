@@ -20,7 +20,7 @@
       "verification": "cd C:\\Users\\kevin\\projects\\licitaciones\\lead_scoring && python -c \"from build_diagnostic_pdf import load_data; d=load_data('132385-4'); ss=d.get('sweet_spot',{}); print(f'Sweet spot: {ss.get(\"best_monto_range\",\"?\")} WR={ss.get(\"best_monto_wr\",0):.0%}'); assert 'best_monto_range' in ss; print('OK')\"",
       "depends_on": [],
       "status": "done",
-      "attempts": 1,
+      "attempts": 2,
       "max_attempts": 3
     },
     {
