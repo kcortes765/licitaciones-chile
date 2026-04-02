@@ -1,7 +1,7 @@
 # Progress — PDF Rebuild + Strategic Messaging
 
 ## Estado: EN PROGRESO
-## Features completadas: 6/9
+## Features completadas: 7/9
 ## Ultima sesion: 2026-04-01
 
 ---
@@ -115,3 +115,25 @@
   - **Apendice**: jerarquia de impacto emocional por insight (alto/medio/bajo)
 - **Largo**: 21,080 caracteres (requisito >5,000)
 - **Verificacion plan**: `Strategy doc: 21080 chars OK`
+
+### Feature 7: mensajes_v7_strategic — DONE
+- **Archivo**: `generar_mensajes_v7.py`
+- **Que hace**: Generador de mensajes WhatsApp v7 basado en MESSAGING_STRATEGY.md. Templates estrategicos con psicologia del comprador.
+- **Cambios vs v6**:
+  - Presentacion: "Sebastian Cortes, ingeniero civil" (nombre completo)
+  - Firma: "Ing. Civil — Inteligencia de Licitaciones" (descriptivo, no marca)
+  - rival_fuerte: "les gano N licitaciones por un total de $XM" (cuantificacion directa)
+  - rival_recurrente: tono "patron emergente" + cuantificacion
+  - win_rate_gap_LP: brecha convertida en contratos perdidos/ano + CLP anual
+  - lp_alto: angulo dual — "proteger ventaja" (WR>=rubro) o "cerrar brecha" (WR<rubro)
+  - inactivo: cuantifica licitaciones del periodo + rivalidad + soporte n_tenders_region
+  - wr_bajo: brecha cuantificada en pesos anuales cuando >= $50M/ano
+  - loss_concentrado: "factor comun — y no es precio" (gancho psicologico)
+  - CTA: max 4 palabras, pregunta cerrada (si/no)
+  - NaN safety: _safe_float/_safe_int/_safe_str como funciones de modulo
+  - Forbidden terms: +ingenia licitaciones, +cl/uster split trick
+- **Output**: mensajes_wsp_v7.txt + leads_verificados_v7.xlsx
+- **Distribucion insights v7**: inactivo(10), lp_alto(9), rival_recurrente(7), win_rate_gap_LP(7), rival_unico(5), default(3), rival_fuerte(2), wr_bajo(1), wr_bajo_lp(1)
+- **Verificacion**: 45/45 mensajes, 0 terminos prohibidos, 0 longitud excedida, 0 CTA faltante, 0 sin numero, 0 IngenIA, 0 CTA>4 palabras
+- **Source check**: score_total NOT in code, cl+uster NOT in code
+- **Verificacion plan**: `v7 OK`
