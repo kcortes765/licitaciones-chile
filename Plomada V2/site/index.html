@@ -3,61 +3,86 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dovela | Inteligencia competitiva para infraestructura y licitaciones</title>
-  <meta name="description" content="Dovela revisa historial publico disponible para ayudar a contratistas a decidir si vale la pena estudiar una licitacion, categoria o cartera corta de oportunidades.">
+  <title>Dovela | Licitaciones de climatización y HVAC priorizadas para tu empresa</title>
+  <meta name="description" content="Dovela te dice qué licitaciones públicas de climatización, HVAC y mantención técnica conviene perseguir, quién está ganando, a qué precios se adjudica y cómo competir mejor. Empieza con un mini-radar gratuito.">
   <link rel="canonical" href="https://dovela.cl/">
-  <meta property="og:title" content="Dovela | Inteligencia competitiva para infraestructura y licitaciones">
-  <meta property="og:description" content="Compradores, rivales, rangos de monto y senales publicas para decidir antes de comprometer horas comerciales.">
+  <meta property="og:title" content="Dovela | Licitaciones de climatización y HVAC priorizadas">
+  <meta property="og:description" content="Qué organismos compran climatización y mantención, quién gana, a qué precios y qué oportunidades vale la pena perseguir. Mini-radar gratuito.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://dovela.cl/">
   <meta property="og:site_name" content="Dovela">
-  <meta property="og:image" content="https://dovela.cl/assets/landing-hero-obra.png">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#101d18">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
     :root {
       color-scheme: light;
       --ink: #14211c;
-      --muted: #65706a;
-      --line: #ded7ca;
-      --paper: #f4f1ea;
+      --muted: #5f6a64;
+      --line: #e2dbcd;
+      --line-soft: #ece6da;
+      --paper: #f5f2ea;
       --panel: #ffffff;
-      --dark: #101d18;
-      --dark-2: #1d332b;
+      --dark: #0f1c17;
+      --dark-2: #1b3128;
       --green: #2f6f5e;
+      --green-deep: #1f5547;
       --steel: #325f72;
       --copper: #b56d2e;
+      --copper-soft: #e7a86a;
       --cream: #fbf8f1;
-      --soft-green: #eaf2ed;
-      --soft-blue: #edf3f5;
-      --soft-copper: #fff0dd;
+      --soft-green: #e9f1ec;
+      --soft-blue: #eaf2f4;
+      --soft-copper: #fdf0df;
+      --shadow-sm: 0 1px 2px rgba(20,33,28,.06), 0 4px 14px rgba(20,33,28,.05);
+      --shadow-md: 0 18px 48px rgba(20,33,28,.10);
+      --shadow-lg: 0 34px 90px rgba(0,0,0,.30);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --ease: cubic-bezier(.16,.84,.44,1);
     }
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
     body {
       margin: 0;
       overflow-x: hidden;
       background: var(--paper);
       color: var(--ink);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      line-height: 1.5;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
     a { color: inherit; }
     h1, h2, h3, p { margin: 0; }
+    img { max-width: 100%; display: block; }
 
+    :focus-visible {
+      outline: 2px solid var(--copper);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+
+    .wrap { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; }
+
+    /* ---------- NAV ---------- */
     .nav {
       position: fixed;
       inset: 0 0 auto 0;
-      z-index: 20;
-      border-bottom: 1px solid rgba(255,255,255,.12);
-      background: rgba(16,29,24,.94);
-      backdrop-filter: blur(12px);
+      z-index: 30;
+      border-bottom: 1px solid transparent;
+      background: rgba(15,28,23,0);
+      transition: background .35s var(--ease), border-color .35s var(--ease), backdrop-filter .35s var(--ease);
+    }
+    .nav.scrolled {
+      background: rgba(15,28,23,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,.10);
     }
     .nav-inner {
-      width: min(1180px, calc(100vw - 32px));
-      min-height: 68px;
-      margin: 0 auto;
+      min-height: 70px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -65,1168 +90,774 @@
       color: #fff;
     }
     .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       font-size: 21px;
       font-weight: 900;
-      letter-spacing: 0;
+      letter-spacing: -.01em;
+      text-decoration: none;
+    }
+    .brand .dot {
+      width: 11px; height: 11px; border-radius: 3px;
+      background: linear-gradient(135deg, var(--copper-soft), var(--copper));
+      box-shadow: 0 0 0 4px rgba(181,109,46,.18);
     }
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 20px;
-      color: rgba(255,255,255,.72);
-      font-size: 13px;
-      font-weight: 760;
+      gap: 26px;
+      color: rgba(255,255,255,.74);
+      font-size: 13.5px;
+      font-weight: 650;
     }
-    .nav-links a { text-decoration: none; }
+    .nav-links a { text-decoration: none; transition: color .2s ease; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--dark);
+      font-size: 13.5px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.25); }
 
+    /* ---------- BUTTONS ---------- */
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 52px;
+      padding: 0 24px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      cursor: pointer;
+      transition: transform .2s var(--ease), box-shadow .2s var(--ease), background .2s ease;
+    }
+    .button.primary { color: #fff; background: linear-gradient(135deg, var(--copper), #a25e23); box-shadow: 0 14px 30px rgba(181,109,46,.32); }
+    .button.primary:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(181,109,46,.40); }
+    .button.light { color: var(--dark); background: #fff; }
+    .button.light:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(0,0,0,.2); }
+    .button.ghost { color: rgba(255,255,255,.9); border-color: rgba(255,255,255,.26); background: rgba(255,255,255,.06); }
+    .button.ghost:hover { background: rgba(255,255,255,.14); transform: translateY(-2px); }
+    .button.dark { color: #fff; background: var(--dark); }
+    .button.dark:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .button .arrow { transition: transform .2s var(--ease); }
+    .button:hover .arrow { transform: translateX(3px); }
+
+    /* ---------- HERO ---------- */
     .hero {
       position: relative;
-      min-height: 88vh;
-      padding: 118px 0 70px;
+      padding: 132px 0 78px;
       color: #fff;
       background:
-        linear-gradient(120deg, rgba(16,29,24,.99) 0%, rgba(16,29,24,.96) 52%, rgba(29,51,43,.92) 100%);
+        radial-gradient(1200px 520px at 78% -8%, rgba(181,109,46,.20), transparent 60%),
+        radial-gradient(900px 600px at 6% 12%, rgba(50,95,114,.22), transparent 55%),
+        linear-gradient(150deg, #0f1c17 0%, #11211b 48%, #1b3128 100%);
       overflow: hidden;
     }
     .hero::before {
       content: "";
       position: absolute;
-      inset: 68px 0 0;
-      opacity: .18;
+      inset: 70px 0 0;
+      opacity: .16;
       background:
         linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px),
         linear-gradient(0deg, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size: 86px 86px;
-      mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent);
+      background-size: 78px 78px;
+      mask-image: linear-gradient(160deg, #000 0%, transparent 72%);
       pointer-events: none;
     }
     .hero-inner {
       position: relative;
       z-index: 1;
-      width: min(1180px, calc(100vw - 32px));
-      margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(400px, .72fr);
+      grid-template-columns: minmax(0, 1.05fr) minmax(390px, .92fr);
       gap: 56px;
       align-items: center;
     }
     .eyebrow {
-      display: block;
-      margin-bottom: 12px;
-      color: var(--copper);
-      font-size: 12px;
-      font-weight: 880;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .hero .eyebrow { color: rgba(255,255,255,.68); }
-    h1 {
-      max-width: 780px;
-      font-size: clamp(46px, 5.4vw, 74px);
-      line-height: 1.02;
-      letter-spacing: 0;
-    }
-    .hero-copy p {
-      max-width: 690px;
-      margin-top: 22px;
-      color: rgba(255,255,255,.8);
-      font-size: 20px;
-    }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 30px;
-    }
-    .button {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      padding: 0 18px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 860;
-    }
-    .button.primary {
-      color: var(--dark);
-      background: #fff;
-    }
-    .button.secondary {
-      color: rgba(255,255,255,.88);
-      border-color: rgba(255,255,255,.22);
-      background: rgba(255,255,255,.08);
-    }
-    .hero-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 28px;
-    }
-    .hero-tags span {
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 999px;
-      padding: 8px 11px;
-      background: rgba(255,255,255,.08);
-      color: rgba(255,255,255,.84);
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .hero-report {
-      min-width: 0;
+      gap: 9px;
+      margin-bottom: 20px;
+      padding: 7px 13px 7px 11px;
       border: 1px solid rgba(255,255,255,.18);
-      border-radius: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.82);
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: .005em;
+    }
+    .eyebrow .pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--copper-soft);
+      box-shadow: 0 0 0 0 rgba(231,168,106,.55);
+      animation: pulse 2.4s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(231,168,106,.5); }
+      70% { box-shadow: 0 0 0 9px rgba(231,168,106,0); }
+      100% { box-shadow: 0 0 0 0 rgba(231,168,106,0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .pulse { animation: none; } }
+    h1 {
+      max-width: 660px;
+      font-size: clamp(38px, 5vw, 62px);
+      line-height: 1.04;
+      letter-spacing: -.025em;
+      font-weight: 850;
+    }
+    h1 .hl { color: var(--copper-soft); }
+    .hero-copy .sub {
+      max-width: 560px;
+      margin-top: 22px;
+      color: rgba(255,255,255,.78);
+      font-size: 18.5px;
+      line-height: 1.6;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; }
+    .hero-trust {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 30px;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 7px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      padding: 7px 13px;
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.84);
+      font-size: 12.5px;
+      font-weight: 650;
+    }
+    .chip svg { flex: 0 0 auto; opacity: .85; }
+
+    /* ---------- HERO MOCK (mini-radar) ---------- */
+    .radar-card {
+      border-radius: var(--radius);
       overflow: hidden;
       background: #fbfaf6;
       color: var(--ink);
-      box-shadow: 0 30px 90px rgba(0,0,0,.32);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,.16);
     }
-    .report-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 18px 20px;
-      border-bottom: 1px solid #e7dfd1;
-      background: #f0f5f1;
+    .radar-top {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 16px 18px;
+      background: linear-gradient(120deg, #143f35, #1f5547);
+      color: #fff;
     }
-    .report-top strong {
-      font-size: 15px;
-      text-transform: uppercase;
-      color: #174b40;
+    .radar-top .t { display: flex; align-items: center; gap: 10px; }
+    .radar-top .ic {
+      width: 30px; height: 30px; border-radius: 8px;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,.14);
     }
-    .report-top span {
-      color: #69736c;
-      font-size: 12px;
-      font-weight: 780;
+    .radar-top strong { font-size: 13.5px; letter-spacing: .02em; text-transform: uppercase; }
+    .radar-top .free {
+      font-size: 11px; font-weight: 800; letter-spacing: .04em;
+      padding: 4px 9px; border-radius: 999px;
+      background: var(--copper); color: #fff;
     }
-    .report-body {
-      padding: 20px;
-    }
+    .radar-body { padding: 18px; }
     .verdict {
-      border-left: 4px solid var(--green);
-      padding: 14px 16px;
-      background: #eef5f0;
+      display: flex; gap: 12px; align-items: flex-start;
+      border-left: 3px solid var(--green);
+      padding: 13px 15px;
+      border-radius: 0 10px 10px 0;
+      background: var(--soft-green);
     }
-    .verdict span {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 860;
-      text-transform: uppercase;
-    }
-    .verdict strong {
-      display: block;
-      font-size: 24px;
-      line-height: 1.08;
-    }
-    .signal-list {
-      display: grid;
-      gap: 14px;
-      margin-top: 20px;
-    }
-    .signal-row {
-      display: grid;
-      grid-template-columns: 120px minmax(0, 1fr) 44px;
-      gap: 12px;
-      align-items: center;
-      color: #3f4943;
-      font-size: 13px;
-      font-weight: 780;
-    }
-    .bar {
-      height: 9px;
-      border-radius: 999px;
-      background: #e6ded0;
-      overflow: hidden;
-    }
-    .bar span {
-      display: block;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--green), var(--copper));
-    }
-    .report-facts {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .fact {
-      min-height: 88px;
-      padding: 12px;
-      border: 1px solid #e4dacb;
+    .verdict .label { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--green-deep); }
+    .verdict strong { display: block; margin-top: 3px; font-size: 17px; line-height: 1.18; }
+    .prio { margin-left: auto; text-align: right; }
+    .prio .num { font-size: 26px; font-weight: 900; color: var(--green-deep); line-height: 1; }
+    .prio .of { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+    .radar-rows { display: grid; gap: 11px; margin-top: 16px; }
+    .rr {
+      display: grid; grid-template-columns: 26px 1fr; gap: 11px; align-items: start;
+      padding: 11px 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
       background: #fff;
     }
-    .fact span {
-      display: block;
-      margin-bottom: 6px;
-      color: #6e746f;
-      font-size: 11px;
-      font-weight: 860;
-      text-transform: uppercase;
+    .rr .ic2 {
+      width: 26px; height: 26px; border-radius: 7px; display: grid; place-items: center;
+      background: var(--soft-blue); color: var(--steel);
     }
-    .fact strong {
-      display: block;
-      font-size: 14px;
-      line-height: 1.24;
-    }
-    .report-note {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid #e7dfd1;
-      color: #69736c;
-      font-size: 12px;
+    .rr .k { font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+    .rr .v { font-size: 13.5px; font-weight: 650; line-height: 1.35; margin-top: 1px; }
+    .rr .v em { font-style: normal; color: var(--copper); font-weight: 800; }
+    .radar-note {
+      margin-top: 14px; padding-top: 13px;
+      border-top: 1px dashed var(--line);
+      color: var(--muted); font-size: 11.5px; line-height: 1.4;
     }
 
-    .main {
-      width: min(1180px, calc(100vw - 32px));
-      margin: -34px auto 72px;
-      position: relative;
-      z-index: 4;
-      min-width: 0;
-    }
-    .strip {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .strip article,
-    .card,
-    .product-card,
-    .faq-list details {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-    }
-    .strip article {
-      min-height: 126px;
-      padding: 18px;
-      box-shadow: 0 18px 48px rgba(35,42,36,.08);
-    }
-    .strip strong {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 17px;
-      line-height: 1.12;
-    }
-    .strip p,
-    .section-head p,
-    .card p,
-    .product-card p,
-    .flow-step p,
-    details p {
-      color: var(--muted);
-      font-size: 15px;
-    }
-
-    .section {
-      margin-top: 32px;
-      padding: 40px 30px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-    }
-    section[id] {
-      scroll-margin-top: 88px;
-    }
-    .section.flat {
-      border-color: transparent;
-      background: transparent;
-      padding-left: 0;
-      padding-right: 0;
-    }
+    /* ---------- SECTIONS ---------- */
+    .main { position: relative; z-index: 2; }
+    .section { padding: 84px 0; }
+    .section.tight { padding: 60px 0; }
+    section[id] { scroll-margin-top: 84px; }
     .section.dark {
       color: #fff;
-      border-color: rgba(255,255,255,.08);
-      background: var(--dark);
+      background:
+        radial-gradient(800px 400px at 90% 0%, rgba(50,95,114,.20), transparent 60%),
+        linear-gradient(160deg, #0f1c17, #1b3128);
     }
-    .section-head {
-      max-width: 780px;
-      margin-bottom: 26px;
+    .head { max-width: 720px; margin: 0 auto 44px; text-align: center; }
+    .head.left { margin-left: 0; text-align: left; }
+    .kicker {
+      display: inline-block; margin-bottom: 14px;
+      color: var(--copper); font-size: 12.5px; font-weight: 800;
+      letter-spacing: .12em; text-transform: uppercase;
     }
-    .section-head.center {
-      margin-left: auto;
-      margin-right: auto;
-      text-align: center;
+    .section.dark .kicker { color: var(--copper-soft); }
+    .head h2 {
+      font-size: clamp(28px, 3.5vw, 42px);
+      line-height: 1.08; letter-spacing: -.02em; font-weight: 820;
     }
-    .section-head h2,
-    .offer-copy h2,
-    .price-head h2 {
-      font-size: clamp(30px, 3.4vw, 46px);
-      line-height: 1.04;
-      letter-spacing: 0;
+    .head p { margin-top: 14px; color: var(--muted); font-size: 17.5px; }
+    .section.dark .head p { color: rgba(255,255,255,.74); }
+
+    /* value strip */
+    .strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .vcard {
+      padding: 22px 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
     }
-    .section-head p,
-    .offer-copy p,
-    .price-head p {
-      margin-top: 12px;
-      font-size: 17px;
+    .vcard .vt { display: block; font-size: 16.5px; font-weight: 820; letter-spacing: -.01em; margin-bottom: 7px; }
+    .vcard p { color: var(--muted); font-size: 14px; }
+    .vcard .vi {
+      width: 38px; height: 38px; border-radius: 10px; margin-bottom: 14px;
+      display: grid; place-items: center;
+      background: var(--soft-green); color: var(--green-deep);
     }
 
-    .problem-grid,
-    .answer-grid,
-    .data-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
+    /* problem cards */
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
     .card {
-      min-height: 185px;
-      padding: 20px;
+      padding: 26px 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
       background: var(--cream);
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s ease;
     }
-    .card h3 {
-      margin-bottom: 9px;
-      font-size: 19px;
-      line-height: 1.14;
-    }
+    .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: #d7cdba; }
     .card .num {
-      display: inline-grid;
-      place-items: center;
-      width: 34px;
-      height: 34px;
-      margin-bottom: 14px;
-      border-radius: 999px;
-      color: #fff;
-      background: var(--dark-2);
-      font-size: 13px;
-      font-weight: 900;
+      display: inline-grid; place-items: center;
+      width: 36px; height: 36px; margin-bottom: 16px;
+      border-radius: 10px; color: #fff; background: var(--dark-2);
+      font-size: 14px; font-weight: 900;
     }
-    .answer-grid .card:nth-child(2n) { background: var(--soft-blue); }
-    .answer-grid .card:nth-child(3n) { background: var(--soft-green); }
+    .card h3 { font-size: 19px; line-height: 1.2; letter-spacing: -.01em; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 14.5px; }
 
-    .source-card {
-      min-height: 182px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--cream);
+    /* delivers split */
+    .split { display: grid; grid-template-columns: minmax(0,.92fr) minmax(360px,1fr); gap: 40px; align-items: center; }
+    .deliver-list { list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 13px; }
+    .deliver-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 15.5px; color: #36433d; }
+    .deliver-list .tick {
+      flex: 0 0 auto; width: 24px; height: 24px; margin-top: 1px;
+      border-radius: 7px; display: grid; place-items: center;
+      background: var(--soft-green); color: var(--green-deep);
     }
-    .source-card h3 {
-      margin-bottom: 8px;
-      font-size: 19px;
-      line-height: 1.12;
-    }
-    .source-card p {
-      color: var(--muted);
-      font-size: 15px;
-    }
-    .source-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .source-links a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 34px;
-      padding: 0 10px;
-      border: 1px solid #d8cfbf;
-      border-radius: 999px;
-      color: #234d43;
-      background: #fff;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 820;
-    }
-    .proof-panel {
-      margin-top: 22px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+    .deliver-list b { font-weight: 750; color: var(--ink); }
+
+    /* mini-radar feature panel */
+    .feature {
+      border-radius: var(--radius);
       overflow: hidden;
-      background: #fff;
-    }
-    .proof-panel header {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: #eef5f1;
-    }
-    .proof-panel header strong {
-      display: block;
-      color: #143f35;
-      font-size: 18px;
-    }
-    .proof-panel header span {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .proof-list {
-      display: grid;
-    }
-    .proof-list div {
-      display: grid;
-      grid-template-columns: 148px minmax(0, 1fr);
-      gap: 14px;
-      padding: 16px 20px;
-      border-bottom: 1px solid #eee4d6;
-    }
-    .proof-list div:last-child { border-bottom: 0; }
-    .proof-list strong {
-      color: #26433a;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-    .proof-list span {
-      color: #5f6963;
-      font-size: 14px;
-    }
-
-    .diagnostic {
-      display: grid;
-      grid-template-columns: minmax(0, .86fr) minmax(420px, 1fr);
-      gap: 28px;
-      align-items: start;
-    }
-    .offer-copy ul,
-    .profile-grid ul {
-      margin: 20px 0 0;
-      padding-left: 20px;
-    }
-    li {
-      margin: 10px 0;
-      color: #59645d;
-    }
-    .sample-report {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fbfaf7;
+      background: var(--panel);
+      box-shadow: var(--shadow-md);
     }
-    .sample-head {
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--line);
-      background: #edf3f0;
-    }
-    .sample-head strong {
-      display: block;
-      margin-top: 6px;
-      font-size: 26px;
-      line-height: 1.05;
-    }
-    .sample-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(230px, .72fr);
-      gap: 12px;
-      padding: 16px;
-    }
-    .sample-block {
-      padding: 15px;
-      border: 1px solid #e3dacd;
-      background: #fff;
-    }
-    .sample-block h3 {
-      margin-bottom: 10px;
-      color: #123e35;
-      font-size: 13px;
-      text-transform: uppercase;
-    }
-    .sample-block p {
-      color: #17201b;
-      font-size: 15px;
-      font-weight: 760;
-    }
-    .sample-block.muted p {
-      color: var(--muted);
-      font-weight: 520;
-    }
-    .sample-block.action {
-      grid-column: 1 / -1;
-      background: var(--soft-copper);
-    }
-
-    .usecase-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .usecase {
-      min-height: 210px;
-      padding: 22px;
-      border-radius: 8px;
-      background: #fff;
-      border: 1px solid var(--line);
-    }
-    .usecase h3 {
-      margin-bottom: 10px;
-      font-size: 21px;
-      line-height: 1.12;
-    }
-    .usecase p { color: var(--muted); }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .flow-step {
-      min-height: 176px;
-      padding: 20px;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 8px;
-      background: rgba(255,255,255,.07);
-    }
-    .flow-step span {
-      display: block;
-      margin-bottom: 12px;
-      color: #f4c28e;
-      font-size: 12px;
-      font-weight: 880;
-      text-transform: uppercase;
-    }
-    .flow-step h3 {
-      margin-bottom: 8px;
-      font-size: 18px;
-      line-height: 1.12;
-    }
-    .flow-step p { color: rgba(255,255,255,.72); }
-
-    .profile-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-    .profile-panel {
-      padding: 24px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-    }
-    .profile-panel h3 {
-      margin-bottom: 8px;
-      font-size: 24px;
-      line-height: 1.08;
-    }
-    .profile-panel p { color: var(--muted); }
-
-    .price-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-    .product-card {
-      min-height: 245px;
-      padding: 22px;
-      background: rgba(255,255,255,.08);
-      border-color: rgba(255,255,255,.15);
-    }
-    .product-card h3 {
-      margin-bottom: 8px;
-      font-size: 21px;
-      line-height: 1.12;
-    }
-    .product-card p { color: rgba(255,255,255,.72); }
-    .product-card strong {
-      display: block;
-      margin: 18px 0 12px;
+    .feature-head {
+      padding: 24px 26px;
+      background: linear-gradient(120deg, #143f35, #1f5547);
       color: #fff;
-      font-size: 24px;
-      line-height: 1.08;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
     }
-    .price-head {
-      max-width: 780px;
-      margin-bottom: 22px;
+    .feature-head h3 { font-size: 22px; letter-spacing: -.01em; }
+    .feature-head .tagfree {
+      font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase;
+      padding: 7px 13px; border-radius: 999px; background: var(--copper);
     }
-    .section.dark .eyebrow { color: #f4c28e; }
-    .section.dark .price-head p,
-    .section.dark .section-head p { color: rgba(255,255,255,.72); }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line-soft); }
+    .fitem { padding: 22px 22px; background: #fff; }
+    .fitem .fi { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; margin-bottom: 13px; background: var(--soft-copper); color: var(--copper); }
+    .fitem h4 { font-size: 15.5px; margin-bottom: 6px; letter-spacing: -.01em; }
+    .fitem p { color: var(--muted); font-size: 13.5px; }
+    .feature-cta { padding: 22px 26px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--line-soft); background: var(--cream); }
+    .feature-cta p { font-size: 14.5px; color: #36433d; }
+    .feature-cta b { color: var(--ink); }
 
-    .faq-list {
-      display: grid;
-      gap: 10px;
-      max-width: 890px;
-      margin: 0 auto;
+    /* method flow */
+    .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .step { padding: 24px 22px; border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-sm); background: rgba(255,255,255,.05); }
+    .step .s { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 9px; margin-bottom: 14px; background: rgba(231,168,106,.16); color: var(--copper-soft); font-weight: 900; font-size: 14px; }
+    .step h3 { font-size: 17.5px; margin-bottom: 7px; letter-spacing: -.01em; }
+    .step p { color: rgba(255,255,255,.72); font-size: 14px; }
+
+    /* offer ladder */
+    .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .tier {
+      position: relative;
+      padding: 26px 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow-sm);
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease);
     }
+    .tier:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+    .tier.flag { border-color: var(--green); box-shadow: 0 0 0 1px var(--green), var(--shadow-md); }
+    .tier .badge { position: absolute; top: -11px; left: 24px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 5px 11px; border-radius: 999px; background: var(--green); color: #fff; }
+    .tier .step-n { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--copper); }
+    .tier h3 { font-size: 21px; margin: 8px 0 6px; letter-spacing: -.01em; }
+    .tier .lead { color: var(--muted); font-size: 14.5px; min-height: 44px; }
+    .tier .price { margin: 16px 0 4px; font-size: 16px; font-weight: 850; color: var(--green-deep); }
+    .tier ul { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 9px; }
+    .tier ul li { position: relative; padding-left: 22px; font-size: 13.5px; color: #45514b; }
+    .tier ul li::before { content: ""; position: absolute; left: 4px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--copper-soft); }
+    .offer-note { margin-top: 22px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
+    /* audience */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .panel { padding: 28px 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow-sm); }
+    .panel h3 { font-size: 22px; line-height: 1.12; letter-spacing: -.01em; margin: 6px 0 8px; }
+    .panel p { color: var(--muted); font-size: 14.5px; }
+    .panel ul { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 11px; }
+    .panel ul li { display: flex; gap: 11px; align-items: flex-start; font-size: 14.5px; color: #45514b; }
+    .panel.yes .mk { background: var(--soft-green); color: var(--green-deep); }
+    .panel.no .mk { background: #f6e7e3; color: #a4502f; }
+    .mk { flex: 0 0 auto; width: 23px; height: 23px; border-radius: 7px; display: grid; place-items: center; margin-top: 1px; font-weight: 900; font-size: 13px; }
+
+    /* faq */
+    .faq { max-width: 880px; margin: 0 auto; display: grid; gap: 12px; }
     details {
-      padding: 16px 18px;
-      background: var(--cream);
+      border: 1px solid var(--line); border-radius: var(--radius-sm);
+      background: var(--panel); padding: 4px 20px; box-shadow: var(--shadow-sm);
+      transition: border-color .2s ease;
     }
+    details[open] { border-color: #d3c9b6; }
     summary {
-      cursor: pointer;
-      font-weight: 860;
+      cursor: pointer; list-style: none; padding: 16px 28px 16px 0; position: relative;
+      font-weight: 760; font-size: 16px; letter-spacing: -.01em;
     }
-    details p { margin-top: 10px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after {
+      content: "+"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+      font-size: 22px; font-weight: 500; color: var(--copper); transition: transform .25s var(--ease);
+    }
+    details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+    details p { padding: 0 0 18px; color: var(--muted); font-size: 14.5px; }
 
-    .final-cta {
-      display: grid;
-      grid-template-columns: minmax(0, .8fr) minmax(300px, .45fr);
-      gap: 24px;
-      align-items: center;
-      margin-top: 32px;
-      padding: 30px;
-      border: 1px solid #d8c9b5;
-      border-radius: 8px;
-      background: #fff8ec;
+    /* final cta */
+    .final {
+      display: grid; grid-template-columns: minmax(0,1.1fr) minmax(300px,.7fr); gap: 32px; align-items: center;
+      padding: 40px; border-radius: var(--radius);
+      background: linear-gradient(135deg, #fff8ec, #fdf0df);
+      border: 1px solid #ecd9bd; box-shadow: var(--shadow-md);
     }
-    .final-cta[id] { scroll-margin-top: 88px; }
-    .final-cta h2 {
-      margin-bottom: 10px;
-      font-size: clamp(28px, 3vw, 40px);
-      line-height: 1.05;
-    }
-    .final-cta p { color: #5f675f; }
-    .final-cta a:not(.button) {
-      color: #123e35;
-      font-weight: 840;
-    }
-    .final-cta .button {
-      justify-self: end;
-      color: #fff;
-      background: var(--dark);
-    }
-    .contact-signature {
-      display: grid;
-      gap: 3px;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid #e7d4ba;
-      color: #38453e;
-      font-size: 14px;
-    }
-    .contact-signature strong {
-      color: #101d18;
-      font-size: 16px;
-    }
-    .contact-actions {
-      display: grid;
-      gap: 10px;
-      justify-items: end;
-    }
-    .contact-actions .contact-email {
-      padding: 10px 12px;
-      border: 1px solid #e2d3bf;
-      border-radius: 8px;
-      background: #fff;
-      color: #2f5148;
-      text-align: center;
-      text-decoration: none;
-      font-size: 13px;
-    }
-    .disclaimer {
-      margin-top: 22px;
-      color: #69726c;
-      font-size: 12px;
-      text-align: center;
-    }
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 22px 0 32px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    footer div {
-      width: min(1180px, calc(100vw - 32px));
-      margin: 0 auto;
-    }
+    .final h2 { font-size: clamp(26px, 3vw, 38px); line-height: 1.08; letter-spacing: -.02em; margin-bottom: 12px; }
+    .final p { color: #4f574f; font-size: 16px; }
+    .final a.inline { color: var(--green-deep); font-weight: 800; text-decoration: none; border-bottom: 1.5px solid rgba(31,85,71,.3); }
+    .sig { display: grid; gap: 2px; margin-top: 20px; padding-top: 18px; border-top: 1px solid #ecd9bd; }
+    .sig strong { font-size: 16px; }
+    .sig span { color: #6a7068; font-size: 13.5px; }
+    .final-actions { display: grid; gap: 12px; }
+    .final-actions .button { width: 100%; }
+    .final-mail { text-align: center; font-size: 13.5px; color: #6a7068; }
 
-    @media (max-width: 980px) {
-      .hero-inner,
-      .diagnostic,
-      .final-cta {
-        grid-template-columns: 1fr;
-      }
-      .strip,
-      .flow {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .problem-grid,
-      .answer-grid,
-      .data-grid,
-      .usecase-grid,
-      .price-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .profile-grid {
-        grid-template-columns: 1fr;
-      }
-      .final-cta .button { justify-self: start; }
-      .contact-actions {
-        justify-items: start;
-      }
+    .disclaimer { margin-top: 26px; text-align: center; color: #757c74; font-size: 12.5px; }
+
+    footer { border-top: 1px solid var(--line); padding: 30px 0 40px; color: var(--muted); font-size: 13px; }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .foot .brand-sm { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; color: var(--ink); font-size: 16px; }
+    .foot .brand-sm .dot { width: 9px; height: 9px; border-radius: 3px; background: linear-gradient(135deg, var(--copper-soft), var(--copper)); }
+
+    /* reveal animation */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 1000px) {
+      .hero-inner, .split, .final { grid-template-columns: 1fr; }
+      .hero { padding-top: 120px; }
+      .strip, .flow { grid-template-columns: repeat(2, 1fr); }
+      .grid-3, .ladder, .feature-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
     }
-
-    @media (max-width: 640px) {
-      .hero {
-        min-height: auto;
-        padding: 96px 0 64px;
-      }
-      .nav-inner,
-      .hero-inner,
-      .main,
-      footer div {
-        width: min(340px, calc(100vw - 32px));
-        max-width: none;
-        margin-left: 16px;
-        margin-right: 16px;
-      }
-      h1 {
-        width: min(340px, calc(100vw - 32px));
-        max-width: min(340px, calc(100vw - 32px));
-        font-size: 32px;
-        line-height: 1.06;
-        overflow-wrap: normal;
-        word-break: normal;
-      }
-      .hero .eyebrow {
-        font-size: 10px;
-        line-height: 1.35;
-      }
-      .hero-copy p {
-        width: min(340px, calc(100vw - 32px));
-        max-width: min(340px, calc(100vw - 32px));
-        font-size: 16px;
-        overflow-wrap: normal;
-        word-break: normal;
-      }
-      .hero-inner { gap: 28px; }
-      .hero-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-      }
-      .hero-actions .button {
-        width: 100%;
-      }
-      .hero-copy,
-      .hero-report,
-      .hero-actions,
-      .hero-tags,
-      .contact-actions,
-      .report-body,
-      .verdict,
-      .fact,
-      .source-card,
-      .sample-report,
-      .sample-block,
-      .product-card {
-        width: min(340px, calc(100vw - 32px));
-        max-width: min(340px, calc(100vw - 32px));
-        min-width: 0;
-      }
-      .contact-actions .button,
-      .contact-actions .contact-email {
-        width: 100%;
-      }
-      .hero-tags span {
-        max-width: 100%;
-        white-space: normal;
-      }
-      .report-top {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .verdict strong {
-        font-size: 20px;
-        line-height: 1.12;
-        overflow-wrap: anywhere;
-      }
-      .sample-body,
-      .report-facts,
-      .strip,
-      .flow,
-      .problem-grid,
-      .answer-grid,
-      .data-grid,
-      .usecase-grid,
-      .price-grid {
-        grid-template-columns: 1fr;
-      }
-      .proof-list div {
-        grid-template-columns: 1fr;
-        gap: 6px;
-      }
-      .signal-row {
-        grid-template-columns: 1fr;
-        gap: 7px;
-      }
-      .main { margin-top: -26px; }
-      .section,
-      .section.dark,
-      .final-cta {
-        padding: 24px 16px;
-      }
-      .section.flat {
-        padding-left: 0;
-        padding-right: 0;
-      }
+    @media (max-width: 620px) {
+      .wrap { width: calc(100vw - 32px); }
+      .section { padding: 60px 0; }
+      .hero { padding: 104px 0 64px; }
+      h1 { font-size: 33px; }
+      .hero-copy .sub { font-size: 16.5px; }
+      .strip, .grid-2, .flow { grid-template-columns: 1fr; }
+      .hero-actions { display: grid; }
+      .hero-actions .button { width: 100%; }
+      .final { padding: 26px; }
+      .nav-cta { padding: 0 14px; }
     }
   </style>
 </head>
 <body>
-  <nav class="nav">
-    <div class="nav-inner">
-      <div class="brand">Dovela</div>
+  <nav class="nav" id="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Dovela inicio"><span class="dot" aria-hidden="true"></span>Dovela</a>
       <div class="nav-links">
         <a href="#problema">Problema</a>
-        <a href="#fuentes">Fuentes</a>
-        <a href="#diagnostico">Diagn&oacute;stico</a>
-        <a href="#metodo">M&eacute;todo</a>
-        <a href="#inversion">C&oacute;mo partir</a>
+        <a href="#entrega">Qué entrega</a>
+        <a href="#mini-radar">Mini-radar</a>
+        <a href="#metodo">Método</a>
+        <a href="#para-quien">Para quién</a>
         <a href="#preguntas">Preguntas</a>
-        <a href="#contacto">Contacto</a>
       </div>
+      <a class="nav-cta" href="#contacto">Pedir mini-radar</a>
     </div>
   </nav>
 
-  <header class="hero">
-    <div class="hero-inner">
+  <header class="hero" id="top">
+    <div class="wrap hero-inner">
       <section class="hero-copy">
-        <span class="eyebrow">Para contratistas que licitan en miner&iacute;a, agua, energ&iacute;a e infraestructura</span>
-        <h1>Antes de estudiar una licitaci&oacute;n, vale saber si tiene sentido entrar.</h1>
-        <p>Dovela revisa el historial p&uacute;blico disponible para mostrarte qui&eacute;n compra, qui&eacute;nes se repiten y qu&eacute; rangos de monto se han manejado en procesos similares. Con eso decides si vale la pena comprometer horas comerciales, o no.</p>
+        <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Inteligencia de licitaciones para climatización y mantención técnica</span>
+        <h1>Qué licitaciones de <span class="hl">climatización</span> conviene perseguir, y cómo competir mejor.</h1>
+        <p class="sub">Dovela revisa las compras públicas de tu rubro y te muestra qué organismos están comprando HVAC y mantención, quién está ganando, a qué precios se adjudica y qué oportunidades vale la pena trabajar primero.</p>
         <div class="hero-actions">
-          <a class="button primary" href="#inversion">Pedir se&ntilde;al inicial</a>
-          <a class="button secondary" href="#fuentes">Ver fuentes</a>
+          <a class="button primary" href="#contacto">Pedir mini-radar gratuito <span class="arrow" aria-hidden="true">→</span></a>
+          <a class="button ghost" href="#mini-radar">Ver cómo funciona</a>
         </div>
-        <div class="hero-tags">
-          <span>Compradores y mandantes</span>
-          <span>Rivales recurrentes</span>
-          <span>Rangos de monto</span>
-          <span>Se&ntilde;ales de cautela</span>
+        <div class="hero-trust">
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 7.7 8 10 4.6-2.3 8-5 8-10V6l-8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Solo fuentes públicas</span>
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4 10-10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Evidencia trazable</span>
+          <span class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Recomendación de acción</span>
         </div>
       </section>
 
-      <aside class="hero-report" aria-label="Ejemplo resumido de lectura Dovela">
-        <div class="report-top">
-          <strong>Lectura Dovela</strong>
-          <span>Diagn&oacute;stico puntual</span>
+      <aside class="radar-card" aria-label="Ejemplo de mini-radar de climatización">
+        <div class="radar-top">
+          <div class="t">
+            <span class="ic" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.5"/><path d="M12 12 17 8" stroke="#e7a86a" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#e7a86a"/></svg>
+            </span>
+            <strong>Mini-radar · Climatización</strong>
+          </div>
+          <span class="free">Gratis</span>
         </div>
-        <div class="report-body">
+        <div class="radar-body">
           <div class="verdict">
-            <span>Recomendaci&oacute;n ejecutiva</span>
-            <strong>Profundizar con cautela antes de ofertar.</strong>
-          </div>
-          <div class="signal-list">
-            <div class="signal-row">
-              <span>Rivalidad</span>
-              <div class="bar"><span style="width: 82%"></span></div>
-              <strong>Alta</strong>
+            <div>
+              <span class="label">Prioridad sugerida</span>
+              <strong>Comprador con recompra anual y baja competencia local.</strong>
             </div>
-            <div class="signal-row">
-              <span>Comprador</span>
-              <div class="bar"><span style="width: 68%"></span></div>
-              <strong>Medio</strong>
+            <div class="prio"><div class="num">8.6</div><div class="of">de 10</div></div>
+          </div>
+          <div class="radar-rows">
+            <div class="rr">
+              <span class="ic2" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 21V8l8-5 8 5v13" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+              <div><div class="k">Comprador público</div><div class="v">Hospital regional — mantención de climatización recurrente.</div></div>
             </div>
-            <div class="signal-row">
-              <span>Timing</span>
-              <div class="bar"><span style="width: 74%"></span></div>
-              <strong>Bueno</strong>
+            <div class="rr">
+              <span class="ic2" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <div><div class="k">Adjudicación reciente</div><div class="v">Servicio HVAC adjudicado por <em>~$48M</em> hace 3 meses.</div></div>
+            </div>
+            <div class="rr">
+              <span class="ic2" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 19c0-3 2.5-4.5 5-4.5S13 16 13 19" stroke="currentColor" stroke-width="1.6"/><path d="M16 7l5 5M21 7l-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <div><div class="k">Competidor frecuente</div><div class="v">Un proveedor concentra 3 de las últimas adjudicaciones.</div></div>
+            </div>
+            <div class="rr">
+              <span class="ic2" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+              <div><div class="k">Oportunidad activa</div><div class="v">Licitación abierta de aire acondicionado, cierra en 9 días.</div></div>
             </div>
           </div>
-          <div class="report-facts">
-            <div class="fact"><span>Comprador</span><strong>Mandante con historial activo en esta categor&iacute;a.</strong></div>
-            <div class="fact"><span>Rival</span><strong>Empresas que aparecen seguido en procesos parecidos.</strong></div>
-            <div class="fact"><span>Monto</span><strong>Rango observado para calibrar si el esfuerzo tiene sentido.</strong></div>
-            <div class="fact"><span>Acci&oacute;n</span><strong>Mirar, profundizar o dejar pasar.</strong></div>
-          </div>
-          <p class="report-note">Ejemplo con datos ilustrativos. El diagn&oacute;stico real parte de la licitaci&oacute;n, empresa o categor&iacute;a que t&uacute; definas.</p>
+          <p class="radar-note">Ejemplo ilustrativo. Tu mini-radar real se arma desde tu rubro y región, con compradores, montos y oportunidades verificables en fuentes públicas.</p>
         </div>
       </aside>
     </div>
   </header>
 
   <main class="main">
-    <section class="strip" aria-label="Resumen de valor">
-      <article>
-        <strong>Antes de gastar d&iacute;as.</strong>
-        <p>Ordena la evidencia antes de pedir presupuestos, visitas, reuniones o apoyo t&eacute;cnico.</p>
-      </article>
-      <article>
-        <strong>Rivales que se repiten.</strong>
-        <p>Identifica empresas que aparecen seguido y cruces que cambian el atractivo del proceso.</p>
-      </article>
-      <article>
-        <strong>Montos con contexto.</strong>
-        <p>Compara rangos observados para calibrar ambici&oacute;n, esfuerzo y riesgo.</p>
-      </article>
-      <article>
-        <strong>Una acci&oacute;n concreta.</strong>
-        <p>La salida final indica si conviene mirar, profundizar o dejar pasar.</p>
-      </article>
-    </section>
-
-    <section id="problema" class="section">
-      <div class="section-head">
-        <span class="eyebrow">El problema</span>
-        <h2>Encontrar licitaciones no es lo dif&iacute;cil. El problema es no saber en cu&aacute;les meterse.</h2>
-        <p>Cuando un equipo estudia una oportunidad que parec&iacute;a atractiva y resulta que el comprador tiene un patr&oacute;n claro con otro proveedor, o que los mismos rivales ganan esa categor&iacute;a hace a&ntilde;os, el costo ya se pag&oacute;: tiempo t&eacute;cnico, reuniones, presupuesto interno y foco.</p>
-      </div>
-      <div class="problem-grid">
-        <article class="card">
-          <span class="num">1</span>
-          <h3>Horas que no vuelven</h3>
-          <p>Presupuestar, visitar, estimar y coordinar toma d&iacute;as. No todos los procesos justifican ese esfuerzo.</p>
-        </article>
-        <article class="card">
-          <span class="num">2</span>
-          <h3>Rivales poco visibles</h3>
-          <p>Muchas empresas saben por experiencia contra qui&eacute;n compiten. Pero no tienen una lectura ordenada de qui&eacute;nes se repiten, en qu&eacute; categor&iacute;as y con qu&eacute; compradores.</p>
-        </article>
-        <article class="card">
-          <span class="num">3</span>
-          <h3>Datos que existen pero no dicen nada solos</h3>
-          <p>La informaci&oacute;n p&uacute;blica est&aacute; disponible. Convertirla en una decisi&oacute;n r&aacute;pida requiere limpieza, criterio y trazabilidad.</p>
-        </article>
-      </div>
-    </section>
-
-    <section id="fuentes" class="section">
-      <div class="section-head">
-        <span class="eyebrow">Fuentes y trazabilidad</span>
-        <h2>De d&oacute;nde sale el an&aacute;lisis y c&oacute;mo se revisa.</h2>
-        <p>Dovela trabaja con informaci&oacute;n p&uacute;blica de compras p&uacute;blicas: licitaciones, compradores, participantes, montos adjudicados, categor&iacute;as y se&ntilde;ales recientes cuando el alcance lo requiere.</p>
-      </div>
-      <div class="data-grid">
-        <article class="source-card">
-          <h3>Fuentes p&uacute;blicas oficiales</h3>
-          <p>Datos publicados por Mercado P&uacute;blico y ChileCompra. Licitaciones, compradores, participantes, &oacute;rdenes de compra y procesos vigentes.</p>
-          <div class="source-links" aria-label="Fuentes publicas de referencia">
-            <a href="https://datos-abiertos.chilecompra.cl/descargas" target="_blank" rel="noopener">Datos Abiertos ChileCompra</a>
-            <a href="https://www.chilecompra.cl/" target="_blank" rel="noopener">ChileCompra</a>
-          </div>
-        </article>
-        <article class="source-card">
-          <h3>El criterio es lo que vale</h3>
-          <p>El dato est&aacute; disponible para cualquiera. Lo que toma tiempo es limpiar nombres de empresas, agrupar compradores, comparar procesos parecidos y traducir todo eso en una recomendaci&oacute;n concreta.</p>
-        </article>
-        <article class="source-card">
-          <h3>L&iacute;mites claros</h3>
-          <p>Solo se usa informaci&oacute;n p&uacute;blica. Si una fuente est&aacute; incompleta, desactualizada o no permite una conclusi&oacute;n fuerte, queda indicado como advertencia en el diagn&oacute;stico.</p>
-        </article>
-      </div>
-      <div class="proof-panel">
-        <header>
-          <strong>Qu&eacute; queda trazado en un diagn&oacute;stico</strong>
-          <span>Para que la recomendaci&oacute;n se pueda revisar internamente con evidencia visible.</span>
-        </header>
-        <div class="proof-list">
-          <div><strong>Fuente</strong><span>De d&oacute;nde viene la evidencia: licitaci&oacute;n, comprador, participante, monto u otra se&ntilde;al p&uacute;blica.</span></div>
-          <div><strong>Fecha</strong><span>Cu&aacute;ndo se revis&oacute; la informaci&oacute;n y qu&eacute; es historial versus se&ntilde;al reciente.</span></div>
-          <div><strong>Criterio</strong><span>Por qu&eacute; esa se&ntilde;al importa: rivalidad, recurrencia, concentraci&oacute;n, monto, comprador o timing.</span></div>
-          <div><strong>Advertencia</strong><span>Cuando el dato tiene limitaciones: montos estimativos, nombres duplicados, muestra chica o procesos no comparables.</span></div>
+    <!-- VALUE STRIP -->
+    <section class="section tight">
+      <div class="wrap">
+        <div class="strip">
+          <article class="vcard reveal">
+            <span class="vi" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 21V8l8-5 8 5v13" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="currentColor" stroke-width="1.7"/></svg></span>
+            <span class="vt">Qué organismos compran</span>
+            <p>Hospitales, municipios, universidades y servicios que compran climatización y mantención.</p>
+          </article>
+          <article class="vcard reveal">
+            <span class="vi" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="vt">Quién está ganando</span>
+            <p>Proveedores adjudicados y competidores que se repiten frente a esos compradores.</p>
+          </article>
+          <article class="vcard reveal">
+            <span class="vi" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V9m5 10V5m5 14v-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            <span class="vt">A qué precios se adjudica</span>
+            <p>Rangos de montos históricos para calibrar si una oportunidad vale tu esfuerzo.</p>
+          </article>
+          <article class="vcard reveal">
+            <span class="vi" aria-hidden="true"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+            <span class="vt">Qué perseguir primero</span>
+            <p>Una recomendación concreta: dónde entrar, qué mirar y qué dejar pasar.</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head center">
-        <span class="eyebrow">Qu&eacute; responde</span>
-        <h2>Las preguntas que importan antes de comprometer tiempo.</h2>
-        <p>El diagn&oacute;stico ordena la conversaci&oacute;n comercial antes de que el equipo invierta d&iacute;as en estudiar una oportunidad.</p>
-      </div>
-      <div class="answer-grid">
-        <article class="card"><h3>&iquest;Conviene mirar esta licitaci&oacute;n ahora?</h3><p>Prioriza los procesos donde hay se&ntilde;ales suficientes para justificar el estudio.</p></article>
-        <article class="card"><h3>&iquest;Contra qui&eacute;n compito de verdad?</h3><p>Ordena rivales recurrentes y cruces que cambian el atractivo del proceso.</p></article>
-        <article class="card"><h3>&iquest;Qu&eacute; comprador concentra actividad?</h3><p>Revisa mandantes, unidades, regiones y patrones relevantes del historial disponible.</p></article>
-        <article class="card"><h3>&iquest;Qu&eacute; rango de monto tiene sentido?</h3><p>Compara montos observados para calibrar ambici&oacute;n, esfuerzo y riesgo.</p></article>
-        <article class="card"><h3>&iquest;Qu&eacute; se&ntilde;ales de riesgo aparecen?</h3><p>Detecta concentraci&oacute;n, baja recurrencia, patrones raros o competencia que se repite.</p></article>
-        <article class="card"><h3>&iquest;Qu&eacute; hago con esto?</h3><p>La salida final es una recomendaci&oacute;n con una acci&oacute;n concreta, no solo una tabla de datos.</p></article>
+    <!-- PROBLEM -->
+    <section id="problema" class="section">
+      <div class="wrap">
+        <div class="head">
+          <span class="kicker">El problema</span>
+          <h2>Hay oportunidades públicas para tu rubro. Lo difícil es saber cuáles atacar.</h2>
+          <p>Las empresas de climatización y mantención técnica venden bien, pero pierden tiempo y plata persiguiendo licitaciones equivocadas o llegando tarde a las buenas.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card reveal">
+            <span class="num">1</span>
+            <h3>Oportunidades dispersas</h3>
+            <p>Las compras de HVAC aparecen repartidas entre licitaciones, órdenes de compra, convenios marco y compras ágiles. Revisarlas todas a mano no escala.</p>
+          </article>
+          <article class="card reveal">
+            <span class="num">2</span>
+            <h3>No sabes contra quién compites</h3>
+            <p>El competidor real no está en Google: está adjudicándose contratos frente a ciertos compradores, una y otra vez, a precios que tú no ves.</p>
+          </article>
+          <article class="card reveal">
+            <span class="num">3</span>
+            <h3>Postular cuesta caro</h3>
+            <p>Preparar una oferta toma horas. Hacerlo en la licitación equivocada, sin entender requisitos ni montos, es esfuerzo comercial que no vuelve.</p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section id="diagnostico" class="section">
-      <div class="diagnostic">
-        <div class="offer-copy">
-          <span class="eyebrow">Producto principal</span>
-          <h2>Diagn&oacute;stico competitivo Dovela.</h2>
-          <p>Una lectura aplicada a tu empresa, categor&iacute;a o una oportunidad concreta. Para decidir qu&eacute; mirar primero, contra qui&eacute;n compites y qu&eacute; evidencia deber&iacute;a pesar antes de asignar horas comerciales.</p>
-          <ul>
-            <li>An&aacute;lisis del comprador o mandante relevante.</li>
-            <li>Rivales recurrentes y cruces competitivos.</li>
-            <li>Rangos de monto observados en procesos comparables.</li>
-            <li>Se&ntilde;ales de oportunidad, cautela, timing y pr&oacute;ximo paso sugerido.</li>
-            <li>Evidencia trazable y radar corto de oportunidades relacionadas.</li>
-            <li>Entrega en PDF con resumen por correo o WhatsApp.</li>
+    <!-- WHAT IT DELIVERS -->
+    <section id="entrega" class="section" style="background:linear-gradient(180deg,#fff,transparent);border-top:1px solid var(--line-soft);">
+      <div class="wrap split">
+        <div>
+          <span class="kicker">Qué entrega Dovela</span>
+          <h2 style="font-size:clamp(28px,3.4vw,40px);line-height:1.1;letter-spacing:-.02em;">El radar te dice qué oportunidades de tu rubro vale la pena trabajar.</h2>
+          <p style="margin-top:14px;color:var(--muted);font-size:17px;">No es un listado de licitaciones ni una base de datos. Es una lectura comercial, con evidencia pública y una recomendación de acción.</p>
+          <ul class="deliver-list">
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Oportunidades priorizadas</b> con un score explicable: cuáles perseguir y cuáles descartar.</span></li>
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Compradores públicos activos</b> en climatización y mantención, y su historial de compra.</span></li>
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Proveedores que ya ganan</b> y rangos de precios a los que se adjudica.</span></li>
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Requisitos y riesgos de postulación</b> antes de invertir horas en una oferta.</span></li>
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Señales de recompra</b>: compradores que vuelven a comprar lo mismo cada año.</span></li>
+            <li><span class="tick" aria-hidden="true">✓</span><span><b>Evidencia trazable</b>: cada señal con su fuente, fecha y por qué importa.</span></li>
           </ul>
         </div>
-        <aside class="sample-report" aria-label="Ejemplo de estructura de diagnostico">
-          <div class="sample-head">
-            <span class="eyebrow">Ejemplo de salida ejecutiva</span>
-            <strong>Lectura ejecutiva para decidir antes de ofertar</strong>
+        <aside class="feature" aria-label="Qué incluye el mini-radar gratuito" id="mini-radar" style="scroll-margin-top:84px;">
+          <div class="feature-head">
+            <h3>Mini-radar gratuito</h3>
+            <span class="tagfree">Sin costo</span>
           </div>
-          <div class="sample-body">
-            <div class="sample-block">
-              <h3>Qu&eacute; vimos</h3>
-              <p>La oportunidad calza con una categor&iacute;a activa. Hay competencia que se repite y un comprador con patr&oacute;n relevante.</p>
-            </div>
-            <div class="sample-block muted">
-              <h3>Preguntas que responde</h3>
-              <p>Conviene mirar, qu&eacute; rival considerar, qu&eacute; monto revisar y qu&eacute; riesgo validar antes de avanzar.</p>
-            </div>
-            <div class="sample-block muted">
-              <h3>Evidencia comercial</h3>
-              <p>Comprador, participantes, adjudicaciones, montos y se&ntilde;ales p&uacute;blicas disponibles.</p>
-            </div>
-            <div class="sample-block muted">
-              <h3>Alcance</h3>
-              <p>No promete adjudicaci&oacute;n. No usa informaci&oacute;n privada. No reemplaza cubicaci&oacute;n ni propuesta t&eacute;cnica.</p>
-            </div>
-            <div class="sample-block action">
-              <h3>Siguiente paso sugerido</h3>
-              <p>Profundizar solo si el margen esperado justifica competir contra los rivales identificados y las condiciones del comprador lo permiten.</p>
-            </div>
+          <div class="feature-grid">
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 21V8l8-5 8 5v13" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><h4>2-3 compradores</h4><p>Organismos relevantes que ya compran tu servicio.</p></div>
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 17l5-5 4 4 8-8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h4>2-3 adjudicaciones</h4><p>Contratos recientes parecidos, con su monto.</p></div>
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M4 19c0-3 2.5-4.5 5-4.5S14 16 14 19" stroke="currentColor" stroke-width="1.6"/></svg></span><h4>1-2 competidores</h4><p>Proveedores que se repiten frente a esos compradores.</p></div>
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><h4>1 oportunidad activa</h4><p>Una licitación abierta o reciente para tu empresa.</p></div>
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 19h16M7 19V9m5 10V5m5 14v-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><h4>Montos de contexto</h4><p>Rangos públicos para calibrar oportunidad y esfuerzo.</p></div>
+            <div class="fitem"><span class="fi" aria-hidden="true"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><h4>Recomendación</h4><p>Un próximo paso concreto, no solo datos.</p></div>
+          </div>
+          <div class="feature-cta">
+            <p><b>Hecho a tu medida.</b> Parte de tu rubro, tu región y tu tipo de cliente público.</p>
+            <a class="button dark" href="#contacto">Pedir el mío <span class="arrow" aria-hidden="true">→</span></a>
           </div>
         </aside>
       </div>
     </section>
 
-    <section class="section flat">
-      <div class="section-head">
-        <span class="eyebrow">Casos de uso</span>
-        <h2>Tres formas de usar Dovela.</h2>
-      </div>
-      <div class="usecase-grid">
-        <article class="usecase">
-          <h3>Antes de una licitaci&oacute;n puntual</h3>
-          <p>Para evaluar si vale la pena estudiar una oportunidad concreta antes de comprometer horas de presupuesto, visitas o ingenier&iacute;a.</p>
-        </article>
-        <article class="usecase">
-          <h3>Para entender tu posici&oacute;n competitiva</h3>
-          <p>Para revisar d&oacute;nde aparece tu empresa, con qu&eacute; compradores, contra qu&eacute; rivales y en qu&eacute; rangos de monto.</p>
-        </article>
-        <article class="usecase">
-          <h3>Como radar mensual</h3>
-          <p>Para empresas que licitan seguido y necesitan una lectura peri&oacute;dica de oportunidades, competidores y se&ntilde;ales recientes.</p>
-        </article>
-      </div>
-    </section>
-
+    <!-- METHOD -->
     <section id="metodo" class="section dark">
-      <div class="section-head">
-        <span class="eyebrow">M&eacute;todo</span>
-        <h2>M&eacute;todo simple, evidencia revisable.</h2>
-        <p>Cada diagn&oacute;stico parte de un foco definido, cruza evidencia p&uacute;blica y termina en una acci&oacute;n sugerida.</p>
-      </div>
-      <div class="flow">
-        <article class="flow-step">
-          <span>01</span>
-          <h3>Definir foco</h3>
-          <p>Una licitaci&oacute;n, categor&iacute;a, comprador o empresa objetivo.</p>
-        </article>
-        <article class="flow-step">
-          <span>02</span>
-          <h3>Cruzar evidencia</h3>
-          <p>Historial p&uacute;blico disponible, licitaciones vigentes, montos, participantes y oportunidades relacionadas.</p>
-        </article>
-        <article class="flow-step">
-          <span>03</span>
-          <h3>Leer se&ntilde;ales</h3>
-          <p>Rivalidad, recurrencia, concentraci&oacute;n, timing y cautelas comerciales.</p>
-        </article>
-        <article class="flow-step">
-          <span>04</span>
-          <h3>Recomendar una acci&oacute;n</h3>
-          <p>Mirar, profundizar o dejar pasar, con evidencia y contexto detr&aacute;s.</p>
-        </article>
+      <div class="wrap">
+        <div class="head">
+          <span class="kicker">Cómo funciona</span>
+          <h2>Método simple, evidencia revisable.</h2>
+          <p>Cada radar parte de un foco claro, cruza información pública y termina en una acción sugerida.</p>
+        </div>
+        <div class="flow">
+          <article class="step reveal"><span class="s">01</span><h3>Defines tu foco</h3><p>Tu rubro dentro de climatización, mantención o HVAC, y tu región objetivo.</p></article>
+          <article class="step reveal"><span class="s">02</span><h3>Cruzamos evidencia</h3><p>Licitaciones, adjudicaciones, compradores, proveedores y montos de fuentes públicas.</p></article>
+          <article class="step reveal"><span class="s">03</span><h3>Leemos las señales</h3><p>Demanda, recompra, concentración de competidores, precios y riesgos de postulación.</p></article>
+          <article class="step reveal"><span class="s">04</span><h3>Recomendamos acción</h3><p>Qué perseguir, qué mirar y qué dejar pasar, con la evidencia detrás.</p></article>
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="profile-grid">
-        <article class="profile-panel">
-          <span class="eyebrow">Calza mejor con</span>
-          <h3>Contratistas medianos y especialistas.</h3>
-          <p>Obras civiles industriales, montaje, movimiento de tierra, piping, mantenci&oacute;n, electricidad industrial, obras hidr&aacute;ulicas, sanitarias e infraestructura p&uacute;blica.</p>
-          <ul>
-            <li>Empresas que licitan seguido.</li>
-            <li>Tienen costo real cuando estudian mal una oportunidad.</li>
-            <li>Necesitan criterio comercial antes de ofertar.</li>
-          </ul>
-        </article>
-        <article class="profile-panel">
-          <span class="eyebrow">No es para</span>
-          <h3>Promesas f&aacute;ciles ni informaci&oacute;n privada.</h3>
-          <p>Dovela no garantiza adjudicaciones, no predice ganadores y no est&aacute; afiliada ni respaldada por ChileCompra, Mercado P&uacute;blico, MOP u organismos p&uacute;blicos.</p>
-          <ul>
-            <li>No reemplaza cubicaci&oacute;n, presupuesto o propuesta t&eacute;cnica.</li>
-            <li>No accede a informaci&oacute;n privada.</li>
-            <li>No entrega una base de datos sin lectura comercial detr&aacute;s.</li>
-          </ul>
-        </article>
+    <!-- OFFER LADDER (no prices) -->
+    <section id="oferta" class="section">
+      <div class="wrap">
+        <div class="head">
+          <span class="kicker">Cómo seguir</span>
+          <h2>Empiezas gratis. El alcance se define después de una primera lectura útil.</h2>
+          <p>Primero el mini-radar. Si hay material para vender, conversamos qué profundidad tiene sentido para tu empresa.</p>
+        </div>
+        <div class="ladder">
+          <article class="tier flag reveal">
+            <span class="badge">Empieza aquí</span>
+            <span class="step-n">Paso 1</span>
+            <h3>Mini-radar gratuito</h3>
+            <p class="lead">Una primera lectura concreta de tu rubro, sin costo y sin compromiso.</p>
+            <p class="price">Gratis</p>
+            <ul>
+              <li>Compradores y adjudicaciones reales</li>
+              <li>Un competidor y una oportunidad</li>
+              <li>Recomendación inicial</li>
+            </ul>
+          </article>
+          <article class="tier reveal">
+            <span class="step-n">Paso 2</span>
+            <h3>Radar vertical</h3>
+            <p class="lead">Seguimiento recurrente de las oportunidades que vale la pena perseguir.</p>
+            <p class="price">Alcance según tu caso</p>
+            <ul>
+              <li>Oportunidades activas priorizadas</li>
+              <li>Compradores, ganadores y precios</li>
+              <li>Requisitos, riesgos y recompra</li>
+            </ul>
+          </article>
+          <article class="tier reveal">
+            <span class="step-n">Cuando aparece una grande</span>
+            <h3>Sprint de licitación</h3>
+            <p class="lead">Apoyo enfocado para una licitación específica que sí te interesa.</p>
+            <p class="price">Por licitación</p>
+            <ul>
+              <li>Lectura de bases y requisitos</li>
+              <li>Fechas críticas y riesgos</li>
+              <li>Benchmark de precios y competidores</li>
+            </ul>
+          </article>
+        </div>
+        <p class="offer-note">Sin letra chica en la landing: revisamos primero si hay oportunidad real antes de hablar de alcance pagado.</p>
       </div>
     </section>
 
-    <section id="inversion" class="section dark">
-      <div class="price-head">
-        <span class="eyebrow">C&oacute;mo partir</span>
-        <h2>Primero una se&ntilde;al breve. Despu&eacute;s se define si tiene sentido profundizar.</h2>
-        <p>Antes de hablar de alcance pagado, reviso si existe suficiente informaci&oacute;n p&uacute;blica para entregar una lectura &uacute;til: oportunidad, rival o mandante a mirar, y una hip&oacute;tesis bid/no-bid. Si esa primera se&ntilde;al sirve, ah&iacute; se conversa el alcance que corresponde.</p>
-      </div>
-      <div class="price-grid">
-        <article class="product-card">
-          <h3>Se&ntilde;al inicial</h3>
-          <p>Una p&aacute;gina breve para ver si hay material suficiente y si la oportunidad merece una segunda mirada.</p>
-          <strong>Sin costo inicial</strong>
-          <p>Incluye oportunidad, rival o mandante a mirar, contexto de monto y una lectura preliminar bid/no-bid.</p>
-        </article>
-        <article class="product-card">
-          <h3>Diagn&oacute;stico puntual</h3>
-          <p>Para evaluar una licitaci&oacute;n concreta antes de estudiarla, presupuestarla o descartarla.</p>
-          <strong>Alcance seg&uacute;n caso</strong>
-          <p>Comprador, rivales, montos comparables, se&ntilde;ales de cautela, radar corto y acci&oacute;n sugerida.</p>
-        </article>
-        <article class="product-card">
-          <h3>Radar competitivo</h3>
-          <p>Para empresas que licitan de forma recurrente y necesitan seguimiento continuo.</p>
-          <strong>Solo si hay encaje</strong>
-          <p>Monitoreo, alertas, seguimiento competitivo y resumen ejecutivo peri&oacute;dico.</p>
-        </article>
+    <!-- AUDIENCE -->
+    <section id="para-quien" class="section" style="background:linear-gradient(180deg,transparent,#fff);">
+      <div class="wrap">
+        <div class="head"><span class="kicker">Para quién es</span><h2>Pensado para proveedores técnicos que venden o podrían vender al Estado.</h2></div>
+        <div class="grid-2">
+          <article class="panel yes">
+            <span class="kicker" style="color:var(--green-deep)">Calza bien con</span>
+            <h3>Empresas de climatización y mantención técnica.</h3>
+            <p>HVAC, refrigeración, ventilación, calefacción, mantención electromecánica y servicios técnicos asociados.</p>
+            <ul>
+              <li><span class="mk" aria-hidden="true">✓</span><span>Venden a hospitales, municipios, universidades u otros organismos públicos.</span></li>
+              <li><span class="mk" aria-hidden="true">✓</span><span>Una o pocas oportunidades ganadas ya mueven la aguja.</span></li>
+              <li><span class="mk" aria-hidden="true">✓</span><span>No tienen un equipo dedicado a inteligencia de licitaciones.</span></li>
+            </ul>
+          </article>
+          <article class="panel no">
+            <span class="kicker" style="color:#a4502f">No es</span>
+            <h3>Una promesa fácil ni información privada.</h3>
+            <p>Dovela trabaja solo con fuentes públicas y es honesta sobre sus límites.</p>
+            <ul>
+              <li><span class="mk" aria-hidden="true">✕</span><span>No garantiza adjudicación ni predice quién gana.</span></li>
+              <li><span class="mk" aria-hidden="true">✕</span><span>No accede a información privada ni reemplaza tu oferta técnica.</span></li>
+              <li><span class="mk" aria-hidden="true">✕</span><span>No está afiliada ni respaldada por ChileCompra, Mercado Público o el MOP.</span></li>
+            </ul>
+          </article>
+        </div>
       </div>
     </section>
 
+    <!-- FAQ -->
     <section id="preguntas" class="section">
-      <div class="section-head center">
-        <span class="eyebrow">Preguntas</span>
-        <h2>Preguntas frecuentes.</h2>
-      </div>
-      <div class="faq-list">
-        <details open>
-          <summary>&iquest;De d&oacute;nde salen los datos?</summary>
-          <p>De informaci&oacute;n p&uacute;blica disponible y revisada: licitaciones, compradores, participantes, montos y otras se&ntilde;ales observables en Mercado P&uacute;blico y ChileCompra.</p>
-        </details>
-        <details>
-          <summary>&iquest;Esto predice qui&eacute;n gana?</summary>
-          <p>No. Muestra con qui&eacute;n se compite, qu&eacute; patrones tiene el comprador y qu&eacute; tan activa est&aacute; la categor&iacute;a. La decisi&oacute;n de entrar o no es tuya.</p>
-        </details>
-        <details>
-          <summary>&iquest;Qu&eacute; recibo exactamente?</summary>
-          <p>Un PDF con el diagn&oacute;stico, evidencia trazable, radar corto de oportunidades relacionadas y una recomendaci&oacute;n de acci&oacute;n concreta. Resumen adicional por correo o WhatsApp.</p>
-        </details>
-        <details>
-          <summary>&iquest;Puede ser mensual?</summary>
-          <p>S&iacute;. El Radar Mensual cubre empresas que licitan de forma recurrente y necesitan seguimiento continuo de oportunidades, competidores y se&ntilde;ales recientes.</p>
-        </details>
-      </div>
+      <div class="wrap">
+        <div class="head"><span class="kicker">Preguntas</span><h2>Preguntas frecuentes.</h2></div>
+        <div class="faq">
+          <details open>
+            <summary>¿De dónde salen los datos?</summary>
+            <p>De información pública de compras del Estado: licitaciones, órdenes de compra, adjudicaciones, compradores, participantes y montos. El criterio está en limpiar, cruzar y traducir eso en una recomendación para tu rubro.</p>
+          </details>
+          <details>
+            <summary>¿Esto predice qué licitación voy a ganar?</summary>
+            <p>No. Dovela muestra compradores activos, quién está ganando, a qué precios y qué oportunidades vale la pena perseguir. La decisión y la postulación siguen siendo tuyas.</p>
+          </details>
+          <details>
+            <summary>¿Qué recibo en el mini-radar gratuito?</summary>
+            <p>Una lectura breve de tu rubro: 2-3 compradores públicos relevantes, 2-3 adjudicaciones recientes con montos, 1-2 competidores, una oportunidad activa y una recomendación inicial. Todo con evidencia pública.</p>
+          </details>
+          <details>
+            <summary>¿Sirve si recién estoy empezando a vender al Estado?</summary>
+            <p>Sí. Justamente sirve para ver si hay demanda pública para tu servicio, quién compra y qué tan competido está, antes de invertir tiempo en postular.</p>
+          </details>
+          <details>
+            <summary>¿Puede ser un seguimiento periódico?</summary>
+            <p>Sí. Si el mini-radar muestra valor, el radar vertical hace seguimiento recurrente de oportunidades, compradores y competidores. El alcance se define según tu caso.</p>
+          </details>
+        </div>
 
-      <div id="contacto" class="final-cta">
-        <div>
-          <h2>&iquest;Tienes una licitaci&oacute;n dando vueltas?</h2>
-          <p>Escr&iacute;beme a <a href="mailto:hola@dovela.cl">hola@dovela.cl</a> con el RUT, la licitaci&oacute;n o la categor&iacute;a que quieres revisar. Si hay informaci&oacute;n p&uacute;blica disponible para trabajar, puedo darte una se&ntilde;al r&aacute;pida antes de que decidas si vale la pena estudiarla.</p>
-          <div class="contact-signature" aria-label="Contacto Dovela">
-            <strong>Sebasti&aacute;n Cort&eacute;s</strong>
-            <span>Fundador, Dovela</span>
-            <span>Inteligencia competitiva para contratistas que licitan</span>
+        <div id="contacto" class="final" style="margin-top:40px;scroll-margin-top:84px;">
+          <div>
+            <h2>Pide tu mini-radar de climatización, gratis.</h2>
+            <p>Escríbeme a <a class="inline" href="mailto:hola@dovela.cl?subject=Quiero%20mi%20mini-radar%20de%20climatizaci%C3%B3n&body=Hola%20Dovela%2C%0A%0AEmpresa%3A%20%0ARubro%20(climatizaci%C3%B3n%2FHVAC%2Fmantenci%C3%B3n)%3A%20%0ARegi%C3%B3n%3A%20%0ATipo%20de%20cliente%20p%C3%BAblico%20que%20me%20interesa%3A%20%0A%0AGracias.">hola@dovela.cl</a> con tu empresa, tu rubro dentro de climatización y tu región. Si hay información pública suficiente, te devuelvo un mini-radar con oportunidades reales.</p>
+            <div class="sig">
+              <strong>Sebastián Cortés</strong>
+              <span>Fundador, Dovela</span>
+              <span>Inteligencia de licitaciones para climatización y mantención técnica</span>
+            </div>
+          </div>
+          <div class="final-actions">
+            <a class="button primary" href="mailto:hola@dovela.cl?subject=Quiero%20mi%20mini-radar%20de%20climatizaci%C3%B3n&body=Hola%20Dovela%2C%0A%0AEmpresa%3A%20%0ARubro%20(climatizaci%C3%B3n%2FHVAC%2Fmantenci%C3%B3n)%3A%20%0ARegi%C3%B3n%3A%20%0ATipo%20de%20cliente%20p%C3%BAblico%20que%20me%20interesa%3A%20%0A%0AGracias.">Pedir mini-radar gratuito <span class="arrow" aria-hidden="true">→</span></a>
+            <span class="final-mail">Respuesta directa de Sebastián · hola@dovela.cl</span>
           </div>
         </div>
-        <div class="contact-actions">
-          <a class="button" href="mailto:hola@dovela.cl?subject=Diagn%C3%B3stico%20competitivo%20Dovela">Escribir a Dovela</a>
-          <a class="contact-email" href="mailto:hola@dovela.cl">hola@dovela.cl</a>
-        </div>
+        <p class="disclaimer">Dovela no está afiliada ni respaldada por Mercado Público, ChileCompra, el MOP u organismos públicos. Trabaja con información pública disponible y no garantiza resultados de adjudicación.</p>
       </div>
-      <p class="disclaimer">Dovela no est&aacute; afiliada ni respaldada por Mercado P&uacute;blico, ChileCompra, MOP u organismos p&uacute;blicos.</p>
     </section>
   </main>
 
   <footer>
-    <div>Dovela - inteligencia competitiva basada en datos p&uacute;blicos para contratistas que licitan.</div>
+    <div class="wrap foot">
+      <span class="brand-sm"><span class="dot" aria-hidden="true"></span>Dovela</span>
+      <span>Inteligencia de licitaciones para climatización y mantención técnica · Chile</span>
+      <span>hola@dovela.cl</span>
+    </div>
   </footer>
+
+  <script>
+    // Nav background on scroll
+    var nav = document.getElementById('nav');
+    var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 24); };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Reveal on scroll
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var items = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('in'); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+      items.forEach(function (el) { io.observe(el); });
+    }
+  </script>
 </body>
 </html>
